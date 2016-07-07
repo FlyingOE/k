@@ -1,1 +1,5 @@
 x86_64 Linux only
+
+usage:
+ make
+ rlwrap -S' ' ./k
