@@ -1,5 +1,5 @@
-CC=clang -Wall -ferror-limit=3 -ffreestanding -nostdlib -fno-builtin -static -fno-unwind-tables \
-         -fno-asynchronous-unwind-tables -fno-unroll-loops
+CC=clang -Wall -ffreestanding -nostdlib -static -fno-builtin -fno-unwind-tables \
+         -fno-asynchronous-unwind-tables -fno-unroll-loops -ferror-limit=3
 b: #build
 	@mkdir -p _
 	@$(CC) k.c -O3 -o _/k
