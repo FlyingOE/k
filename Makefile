@@ -1,4 +1,4 @@
-CC=clang -Wall -ffreestanding -nostdlib -static -fno-builtin -fno-unwind-tables \
+CC=clang -Wall -Wno-unused-function -ffreestanding -nostdlib -static -fno-builtin -fno-unwind-tables \
          -fno-asynchronous-unwind-tables -fno-unroll-loops -ferror-limit=3
 b: #build
 	@mkdir -p _
