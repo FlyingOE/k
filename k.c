@@ -1,4 +1,4 @@
-#define F(n,b) {L _n=(n),i=0;for(;i<_n;i++){b;}}
+#define F(n,b){L _n=(n),i=0;for(;i<_n;i++){b;}}
 #define J if
 #define E else
 #define R return
@@ -20,19 +20,24 @@ V exit(I);asm("exit:mov $60,%rax\nsyscall");
 
 //utils
 #define ee(m,c){J(c){write(2,"'"m"\n",2+SZ(m));exit(1);}}
+S L min(L x,L y){R x>y?x:y;}
+S L max(L x,L y){R x>y?x:y;}
+S L abs(L x){R x>0?x:-x;}
 
 //memory
+TD struct{L r,n;C t;}*A;
+#define xr ((x)->r)
+#define xn ((x)->n)
+#define xt ((x)->t)
+#define xA ((A*)(x+1))
+#define xL ((L*)(x+1))
 S V*mp;
 S V m0(){mp=(V*)mmap(0,1L<<46,3,0x4022,-1,0);ee("mm",(L)mp<0);}
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z,*p++=*q++);}
 S V ms(V*x,C y,L z){C*p=x;F(z,*p++=y);}
-S V*ma(L x){*(L*)mp=x;mp+=x+8;R mp-x;}
-S V mf(V*x){L n=*(L*)x-1;ms(x-8,0xaa,n+8);}
-S L mz(V*x){R*((L*)x-1);}
-S V*mr(V*x,L n){J(n<=mz(x)){*((L*)x-1)=n;R x;}V*r=ma(n);mc(r,x,mz(x));mf(x);R r;}
-
-//arrays
-TD struct{L r,n;C t;}*A;
+S L mz(A x){L t=abs(xt);R(max(xn,1)*(106<=t&&t<=108?8:t==105?16:t==1?1:t==10?8:8*SZ(V*))-1)/8+1;}
+S A ma(C t,L n){A x=mp;xr=1;xt=t;xn=n;mp+=SZ(A)+mz(x);R x;}
+S V mf(A x){J(--xr)R;J(!xt)F(xn,mf(xA[i]));ms(x,0xaa,mz(x));}
 
 //main
 S V exec(C*x){J(*x=='\\'&&!x[1])exit(0);write(1,"pong\n",5);}
