@@ -1,32 +1,32 @@
 #define B break
-#define DF default
+#define D default
 #define F(n,b){L _n=(n),i=0;for(;i<_n;i++){b;}}
 #define J if
 #define E else
+#define Q case
 #define R return
 #define S static
-#define SW switch
-#define SZ sizeof
-#define TD typedef
-#define Q case
+#define T typedef
+#define Y switch
 #define W while
-TD void V;TD char C;TD int I;TD long long L;
+#define Z sizeof
+T void V;T char C;T int I;T long long L;
 
 //syscalls
 #include<syscall.h>
-#define XSTR(x) STR(x)
 #define STR(x) #x
+#define XSTR(x) STR(x)
 #define  H(f,...) L f(__VA_ARGS__);asm(#f":               mov $"XSTR(__NR_##f)",%rax\nsyscall\nret");//<4 args
 #define H4(f,...) L f(__VA_ARGS__);asm(#f":mov %rcx,%r10\nmov $"XSTR(__NR_##f)",%rax\nsyscall\nret");//4+ args
 H(read,I,V*,I)H(write,I,C*,I)H(open,C*,I,I)H(close,I)H(fstat,I,V*)H4(mmap,V*,L,I,I,I,I)H(munmap,V*,L)
-#undef XSTR
 #undef STR
+#undef XSTR
 #undef H
 #undef H4
 V exit(I);asm("exit:mov $60,%rax\nsyscall");
 
 //utils
-#define ee(m,c){J(c){write(2,"'"m"\n",2+SZ(m));exit(1);}}
+#define ee(m,c){J(c){write(2,"'"m"\n",2+Z(m));exit(1);}}
 S L min(L x,L y){R x>y?x:y;}
 S L max(L x,L y){R x>y?x:y;}
 S L abs(L x){R x>0?x:-x;}
@@ -45,7 +45,7 @@ S V pm(V*x,V*y){
 }
 
 //array header
-TD struct{L z,r,n,t;}*A;
+T struct{L z,r,n,t;}*A;
 #define xr ((x)->r)
 #define yr ((y)->r)
 #define zr ((z)->r)
@@ -70,9 +70,9 @@ S V*mp0,*mp;
 S V mi(){mp0=mp=(V*)mmap(0,1L<<46,3,0x4022,-1,0);ee("mm",(L)mp<0);}
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z,*p++=*q++);}
 S V ms(V*x,C y,L z){C*p=x;F(z,*p++=y);}
-S L mz(A x){R(max(1,xn)*SZ(L));}
-S A ma(C t,L n){A x=mp;xr=1;xt=t;xn=n;mp+=SZ(*x)+mz(x);R x;}
-S V mf(A x){J(--xr)R;J(!xt)F(max(1,xn),mf(xA[i]));ms(x,0xaa,SZ(*x)+mz(x));}
+S L mz(A x){R(max(1,xn)*Z(L));}
+S A ma(C t,L n){A x=mp;xr=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}
+S V mf(A x){J(--xr)R;J(!xt)F(max(1,xn),mf(xA[i]));ms(x,0xaa,Z(*x)+mz(x));}
 
 //parser
 S C*s0,*s;
@@ -80,12 +80,12 @@ S L ltr(C x){x|=32;R'a'<=x&&x<='z';}
 S L dgt(C x){R'0'<=x&&x<='9';}
 S L ldg(C x){R ltr(x)||dgt(x);}
 S L num(C*x){R dgt(*x)||(*x=='-'&&dgt(x[1]));}
-S C esc(C x){SW(x){Q'\0':R'0';Q'\n':R'n';Q'\r':R'r';Q'\t':R't';Q'"':R'"';DF:R 0;}}
-S C une(C x){SW(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';DF:R x;}}
+S C esc(C x){Y(x){Q'\0':R'0';Q'\n':R'n';Q'\r':R'r';Q'\t':R't';Q'"':R'"';D:R 0;}}
+S C une(C x){Y(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';D:R x;}}
 S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
 S A addC(A x,C y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zC[xn]=y;mf(x);R z;}
 S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(2,p,q-p);C b[256];*b='\n';
-            L k=min(s-p,SZ(b));F(k,b[i+1]='_');b[k+1]='^';b[k+2]='\n';write(2,b,k+3);ee("parse",1);}
+            L k=min(s-p,Z(b));F(k,b[i+1]='_');b[k+1]='^';b[k+2]='\n';write(2,b,k+3);ee("parse",1);}
 S A prs(C*x){
   s=s0=x;
   J(ltr(*s)){L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}A x=ma(-11,1);*xL=v;R x;}
@@ -105,11 +105,11 @@ S V ofl(){write(1,ob,on);on=0;}
 S V oC(C x){J(on==oN)ofl();ob[on++]=x;}
 S V oS(C*x,L n){W(n>oN-on){mc(ob+on,x,oN-on);x+=oN-on;n-=oN-on;ofl();}J(n){mc(ob+on,x,n);on+=n;}}
 S V oL(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';oS(u+1,b+31-u);}
-S V oA(A x){SW(abs(xt)){
+S V oA(A x){Y(abs(xt)){
   Q 6:J(xn){F(xn,{J(i)oC(' ');oL(xL[i]);});}E{oS("!0",2);}B;
   Q 10:{oC('"');F(xn,{C c=esc(xC[i]);J(c){oC('\\');oC(c);}E{oC(xC[i]);}});oC('"');B;}
   Q 11:F(xn,{oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}});B;
-  DF:oS("???",3);B;
+  D:oS("???",3);B;
 }}
 S V out(A x){oA(x);oC('\n');ofl();}
 
