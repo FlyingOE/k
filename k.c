@@ -61,6 +61,9 @@ TD struct{L z,r,n,t;}*A;
 #define xL ((L*)(x+1))
 #define yL ((L*)(y+1))
 #define zL ((L*)(z+1))
+#define xC ((C*)(x+1))
+#define yC ((C*)(y+1))
+#define zC ((C*)(z+1))
 
 //memory
 S V*mp0,*mp;
@@ -72,14 +75,23 @@ S A ma(C t,L n){A x=mp;xr=1;xt=t;xn=n;mp+=SZ(*x)+mz(x);R x;}
 S V mf(A x){J(--xr)R;J(!xt)F(max(1,xn),mf(xA[i]));ms(x,0xaa,SZ(*x)+mz(x));}
 
 //parser
+S C*s0,*s;
 S L ltr(C x){x|=32;R'a'<=x&&x<='z';}
 S L dgt(C x){R'0'<=x&&x<='9';}
 S L ldg(C x){R ltr(x)||dgt(x);}
 S L num(C*x){R dgt(*x)||(*x=='-'&&dgt(x[1]));}
+S C esc(C x){SW(x){Q'\0':R'0';Q'\n':R'n';Q'\r':R'r';Q'\t':R't';Q'"':R'"';DF:R 0;}}
+S C une(C x){SW(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';DF:R x;}}
 S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
-S A prs(C*s){
+S A addC(A x,C y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zC[xn]=y;mf(x);R z;}
+S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(2,p,q-p);C b[256];*b='\n';
+            L k=min(s-p,SZ(b));F(k,b[i+1]='_');b[k+1]='^';b[k+2]='\n';write(2,b,k+3);ee("parse",1);}
+S A prs(C*x){
+  s=s0=x;
   J(ltr(*s)){L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}A x=ma(-11,1);*xL=v;R x;}
   J(*s=='`'){A x=ma(11,0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}R x;}
+  J(*s=='"'){s++;A x=ma(10,0);W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
+             ep(!*s);s++;R x;}
   J(num(s)){A x=ma(6,0);
             W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
             J(xn==1)xt=-xt;R x;}
@@ -95,6 +107,7 @@ S V oS(C*x,L n){W(n>oN-on){mc(ob+on,x,oN-on);x+=oN-on;n-=oN-on;ofl();}J(n){mc(ob
 S V oL(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';oS(u+1,b+31-u);}
 S V oA(A x){SW(abs(xt)){
   Q 6:J(xn){F(xn,{J(i)oC(' ');oL(xL[i]);});}E{oS("!0",2);}B;
+  Q 10:{oC('"');F(xn,{C c=esc(xC[i]);J(c){oC('\\');oC(c);}E{oC(xC[i]);}});oC('"');B;}
   Q 11:F(xn,{oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}});B;
   DF:oS("???",3);B;
 }}
