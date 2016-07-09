@@ -4,3 +4,5 @@ b: #build
 	@$(CC) k.c -O3 -o k
 	@strip -R .comment -R '.note*' k
 	@stat -c 'size:%s' k
+t:b #test
+	@./t.sh
