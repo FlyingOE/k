@@ -99,11 +99,10 @@ S A prs(C*x){
 }
 
 //output
-#define oN 0x400
-S C ob[oN];S L on=0;
+S C ob[0x400];S L on=0;
 S V ofl(){write(1,ob,on);on=0;}
-S V oC(C x){J(on==oN)ofl();ob[on++]=x;}
-S V oS(C*x,L n){W(n>oN-on){mc(ob+on,x,oN-on);x+=oN-on;n-=oN-on;ofl();}J(n){mc(ob+on,x,n);on+=n;}}
+S V oC(C x){J(on==Z(ob))ofl();ob[on++]=x;}
+S V oS(C*x,L n){W(n>Z(ob)-on){mc(ob+on,x,Z(ob)-on);x+=Z(ob)-on;n-=Z(ob)-on;ofl();}J(n){mc(ob+on,x,n);on+=n;}}
 S V oL(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';oS(u+1,b+31-u);}
 S V oA(A x){Y(abs(xt)){
   Q 6:J(xn){F(xn,{J(i)oC(' ');oL(xL[i]);});}E{oS("!0",2);}B;
