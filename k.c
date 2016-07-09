@@ -78,7 +78,8 @@ S L ldg(C x){R ltr(x)||dgt(x);}
 S L num(C*x){R dgt(*x)||(*x=='-'&&dgt(x[1]));}
 S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
 S A prs(C*s){
-  J(ltr(*s)){L v=*s,h=8;s++;W(ldg(*s)){v|=*s++<<h;h+=8;};A x=ma(-11,1);*xL=v;R x;}
+  J(ltr(*s)){L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}A x=ma(-11,1);*xL=v;R x;}
+  J(*s=='`'){A x=ma(11,0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}R x;}
   J(num(s)){A x=ma(6,0);
             W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
             J(xn==1)xt=-xt;R x;}
