@@ -16,10 +16,13 @@ TD void V;TD char C;TD int I;TD long long L;
 #include<syscall.h>
 #define XSTR(x) STR(x)
 #define STR(x) #x
-#define H(f,...) L f(__VA_ARGS__);asm(#f":               mov $"XSTR(__NR_##f)",%rax\nsyscall\nret");//<4 args
-#define G(f,...) L f(__VA_ARGS__);asm(#f":mov %rcx,%r10\nmov $"XSTR(__NR_##f)",%rax\nsyscall\nret");//4+ args
-H(read,I,V*,I)H(write,I,C*,I)H(open,C*,I,I)H(close,I)H(fstat,I,V*)G(mmap,V*,L,I,I,I,I)H(munmap,V*,L)
+#define  H(f,...) L f(__VA_ARGS__);asm(#f":               mov $"XSTR(__NR_##f)",%rax\nsyscall\nret");//<4 args
+#define H4(f,...) L f(__VA_ARGS__);asm(#f":mov %rcx,%r10\nmov $"XSTR(__NR_##f)",%rax\nsyscall\nret");//4+ args
+H(read,I,V*,I)H(write,I,C*,I)H(open,C*,I,I)H(close,I)H(fstat,I,V*)H4(mmap,V*,L,I,I,I,I)H(munmap,V*,L)
+#undef XSTR
+#undef STR
 #undef H
+#undef H4
 V exit(I);asm("exit:mov $60,%rax\nsyscall");
 
 //utils
