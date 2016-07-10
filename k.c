@@ -46,7 +46,7 @@ S V pm(V*x,V*y){
 }
 
 //array header
-T struct{L r,t,n;}*A; //r:refcount,t:type,n:length
+T struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
 #define xr (x->r)
 #define yr (y->r)
 #define zr (z->r)
@@ -56,15 +56,15 @@ T struct{L r,t,n;}*A; //r:refcount,t:type,n:length
 #define xt (x->t)
 #define yt (y->t)
 #define zt (z->t)
-#define xL ((L*)(x+1))
-#define yL ((L*)(y+1))
-#define zL ((L*)(z+1))
-#define xA ((A*)(x+1))
-#define yA ((A*)(y+1))
-#define zA ((A*)(z+1))
-#define xC ((C*)(x+1))
-#define yC ((C*)(y+1))
-#define zC ((C*)(z+1))
+#define xL (x->L)
+#define yL (y->L)
+#define zL (z->L)
+#define xA (x->A)
+#define yA (y->A)
+#define zA (z->A)
+#define xC (x->C)
+#define yC (y->C)
+#define zC (z->C)
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp;                                                              //pointer to free memory
@@ -79,10 +79,10 @@ S A mh(A x){xr++;R x;}                                                    //hold
 //constants
 S A ca0,cl0,cc0,cy0,cc[256],cv[128][2];
 S V ci(){ //init
-  cl0=ma( 6,0);*(L*)(cl0+1)=0;       //!0
-  cc0=ma(10,0);*(C*)(cc0+1)=' ';     //""
-  cy0=ma(11,0);*(L*)(cy0+1)=0;       //0#`
-  ca0=ma( 0,0);*(A*)(ca0+1)=mh(cc0); //()
+  cl0=ma( 6,0);*cl0->L=0;       //!0
+  cc0=ma(10,0);*cc0->C=' ';     //""
+  cy0=ma(11,0);*cy0->L=0;       //0#`
+  ca0=ma( 0,0);*ca0->A=mh(cc0); //()
   F(256){A x=cc[i]=ma(-10,1);*xC=i;} //chars
   ms(cv,0,Z(cv));
   FS("!#$%&*+,<=>?@^_|~:.-")F(2){A x=cv[c][i]=ma(107-i,2-i);*xC=c;} //verbs
@@ -99,9 +99,9 @@ S C esc(C x){Y(x){Q'\0':R'0';Q'\n':R'n';Q'\r':R'r';Q'\t':R't';Q'"':R'"';D:R 0;}}
 S C une(C x){Y(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';D:R x;}}
 S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
 S A addC(A x,C y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zC[xn]=y;mf(x);R z;}
-S A a1(A x        ){A r=ma(0,1);*(A*)(r+1)=mh(x);                                          R r;} //singleton
-S A a2(A x,A y    ){A r=ma(0,2);*(A*)(r+1)=mh(x);((A*)(r+1))[1]=mh(y);                     R r;} //pair
-S A a3(A x,A y,A z){A r=ma(0,3);*(A*)(r+1)=mh(x);((A*)(r+1))[1]=mh(y);((A*)(r+1))[2]=mh(z);R r;} //triplet
+S A a1(A x        ){A r=ma(0,1);*r->A=mh(x);                            R r;} //singleton
+S A a2(A x,A y    ){A r=ma(0,2);*r->A=mh(x);r->A[1]=mh(y);              R r;} //pair
+S A a3(A x,A y,A z){A r=ma(0,3);*r->A=mh(x);r->A[1]=mh(y);r->A[2]=mh(z);R r;} //triplet
 S A mon(A x){R xt==107&&xn==2?cv[*xC][1]:x;} //monadic version of verb, eg + -> +:
 S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(2,p,q-p);C b[256];*b='\n'; //parse error
             L k=min(s-p,Z(b));F(k)b[i+1]='_';b[k+1]='^';b[k+2]='\n';write(2,b,k+3);ee("parse",1);}
@@ -133,7 +133,7 @@ S A apply(A x){
     Y(*yC){
       Q'-':{J(xn!=3){ee("rank",1);R 0;}
             J(abs(xA[1]->t)!=6||abs(xA[2]->t)!=6){ee("type",1);R 0;}
-            A z=ma(-6,1);*zL=*(L*)(xA[1]+1)-*(L*)(xA[2]+1);R z;}
+            A z=ma(-6,1);*zL=*xA[1]->L-*xA[2]->L;R z;}
     }
   }
   ee("nyi",1);R 0;
