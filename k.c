@@ -31,8 +31,8 @@ S L min(L x,L y){R x>y?x:y;}
 S L max(L x,L y){R x>y?x:y;}
 S L abs(L x){R x>0?x:-x;}
 S L len(C*x){C*p=x;W(*x)x++;R x-p;}
-S C hex(L x){R(x>9?'a'-10:'0')+x;}
-S L unh(C x){R x>='a'?x-'a'+10:x>='A'?x-'A'+10:x-'0';}
+S C hex(L x){      R x+(x> 9 ?'a'-10:'0');}
+S L unh(C x){x|=32;R x-(x>'9'?'a'-10:'0');}
 S V ps(C*x){write(2,x,len(x));}
 S V ph(L x){C s[17];s[16]=0;F(16,{s[15-i]=hex(x&15);x>>=4;});write(2,s,17);}
 #define pv(x) pv1(#x":",(L)(x))
