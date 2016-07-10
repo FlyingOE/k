@@ -1,15 +1,15 @@
 #define B break
 #define D default
+#define E else
 #define F(n) for(L _n=(n),i=0;i<_n;i++)
 #define FS(s) for(C c,*_p=s;(c=*_p);_p++)
 #define J if
-#define E else
 #define Q case
 #define R return
 #define S static
 #define T typedef
-#define Y switch
 #define W while
+#define Y switch
 #define Z sizeof
 T void V;T char C;T int I;T long long L;
 
@@ -84,6 +84,7 @@ S V ci(){
   cy0=ma(11,0);*(L*)(cy0+1)=0;
   ca0=ma( 0,0);*(A*)(ca0+1)=mh(cc0);
   F(256){A x=cc[i]=ma(-10,1);*xC=i;}
+  ms(cv,0,Z(cv));
   FS("!#$%&*+,<=>?@^_|~:.-")F(2){A x=cv[c][i]=ma(107-i,2-i);*xC=c;}
   FS("'\\/"                )F(2){A x=cv[c][i]=ma(108  ,  1);*xC=c;}
 }
@@ -93,27 +94,50 @@ S C*s0,*s;
 S L ltr(C x){x|=32;R'a'<=x&&x<='z';}
 S L dgt(C x){R'0'<=x&&x<='9';}
 S L ldg(C x){R ltr(x)||dgt(x);}
-S L num(C*x){R dgt(*x)||(*x=='-'&&dgt(x[1]));}
+S L num(C*x){R dgt(*x)||(*x=='.'&&dgt(x[1]))||((*x=='-'&&(dgt(x[1])))||(x[1]=='.'&&dgt(x[2])));}
 S C esc(C x){Y(x){Q'\0':R'0';Q'\n':R'n';Q'\r':R'r';Q'\t':R't';Q'"':R'"';D:R 0;}}
 S C une(C x){Y(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';D:R x;}}
 S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
 S A addC(A x,C y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zC[xn]=y;mf(x);R z;}
+S A a1(A x        ){A r=ma(0,1);*(A*)(r+1)=mh(x);                                          R r;}
+S A a2(A x,A y    ){A r=ma(0,2);*(A*)(r+1)=mh(x);((A*)(r+1))[1]=mh(y);                     R r;}
+S A a3(A x,A y,A z){A r=ma(0,3);*(A*)(r+1)=mh(x);((A*)(r+1))[1]=mh(y);((A*)(r+1))[2]=mh(z);R r;}
+S A mon(A x){R xt==107&&xn==2?cv[*xC][1]:x;}
 S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(2,p,q-p);C b[256];*b='\n';
             L k=min(s-p,Z(b));F(k)b[i+1]='_';b[k+1]='^';b[k+2]='\n';write(2,b,k+3);ee("parse",1);}
-S A prs(C*x){
-  s=s0=x;
-  J(ltr(*s)){L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}A x=ma(-11,1);*xL=v;R x;}
-  J(*s=='`'){A x=mh(cy0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}R x;}
-  J(*s=='"'){s++;A x=mh(cc0);W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
-             ep(!*s);s++;R x;}
-  J(num(s)){A x=mh(cl0);
-            W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
-            J(xn==1)xt=-xt;R x;}
-  ee("parse",1);R 0;
+S A prs(){
+  A t[64];L n=0,g=0;
+  W(1){
+    A x=0;L gx=0;ep(0x80&*s);W(*s==' ')s++;J(*s=='/')W(*s&&*s!='\n')s++;C c=*s;
+    J(!c)B;
+    E J(ltr(c)){x=ma(-11,1);L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}*xL=v;}
+    E J(c=='`'){x=mh(cy0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}}
+    E J(c=='"'){x=mh(cc0);s++;W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
+                ep(!*s);s++;J(xn==1)xt=-xt;}
+    E J(num(s)&&(*s!='-'||s==s0||(!ldg(s[-1])&&s[-1]!=')'))){
+                x=mh(cl0);W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');
+                               x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
+                J(xn==1)xt=-xt;}
+    E J(c<127&&cv[c][0]){I u=s[1]==':';x=mh(cv[c][u]);s+=1+u;gx=1;}
+    E{ep(1);R 0;}
+    J(!x)B;t[n++]=x;g=g<<1|gx;
+  }
+  if(!n||(g&1)){ee("nyi",1);R 0;}
+  A z=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){z=a3(t[n-1],t[n-2],z);n-=2;g>>=2;}E{z=a2(mon(t[--n]),z);g>>=1;}}R z;
 }
 
 //eval&apply
-S A apply(A x){ee("nyi-apply",1);R 0;}
+S A apply(A x){
+  A y=*xA;
+  J(yt==107){
+    Y(*yC){
+      Q'-':{J(xn!=3){ee("rank",1);R 0;}
+            J(abs(xA[1]->t)!=6||abs(xA[2]->t)!=6){ee("type",1);R 0;}
+            A z=ma(-6,1);*zL=*(L*)(xA[1]+1)-*(L*)(xA[2]+1);R z;}
+    }
+  }
+  ee("nyi",1);R 0;
+}
 S A eval(A x){
   J(xt==-11){ee("nyi-var",1);R 0;}
   J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
@@ -136,7 +160,7 @@ S V oA(A x){Y(abs(xt)){
 S V out(A x){oA(x);oC('\n');ofl();}
 
 //main
-S V exec(C*x){J(*x=='\\'&&!x[1])exit(0);A t=prs(x),r=eval(t);mf(t);out(r);mf(r);}
+S V exec(C*x){J(*x=='\\'&&!x[1])exit(0);s=s0=x;A t=prs(),r=eval(t);mf(t);out(r);mf(r);}
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
 V go(I ac,C**av){
   mi();ci();
@@ -145,4 +169,5 @@ V go(I ac,C**av){
            s[n-1]=0;exec(s);r=munmap(s,n);ee("munmap",r);}
   C b[256];I nb=0,k;
   W((k=read(0,b,256-nb))>0){C*p=b,*q=b+nb,*r=q+k;W(q<r){J(*q=='\n'){*q=0;exec(p);p=q+1;}q++;}mc(b,p,nb=q-p);}
-  exit(0);}
+  exit(0);
+}
