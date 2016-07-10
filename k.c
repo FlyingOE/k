@@ -27,7 +27,7 @@ H(read,I,V*,I)H(write,I,C*,I)H(open,C*,I,I)H(close,I)H(fstat,I,V*)H4(mmap,V*,L,I
 V exit(I);asm("exit:mov $60,%rax\nsyscall");
 
 //utils
-#define ee(m,c){J(c){write(2,"'"m"\n",2+Z(m));exit(1);}} //error
+#define er(m){write(2,"'"m"\n",2+Z(m));exit(1);} //error
 S L min(L x,L y){R x>y?x:y;}
 S L max(L x,L y){R x>y?x:y;}
 S L abs(L x){R x>0?x:-x;}
@@ -68,7 +68,7 @@ T struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp;                                                              //pointer to free memory
-S V mi(){mp0=mp=(V*)mmap(0,1L<<46,3,0x4022,-1,0);ee("mm",(L)mp<0);}       //init
+S V mi(){mp0=mp=(V*)mmap(0,1L<<46,3,0x4022,-1,0);J((L)mp<0)er("mm");}     //init
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                            //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                    //memset
 S L mz(A x){R(max(1,xn)*Z(L));}                                           //array size
@@ -105,7 +105,7 @@ S A a2(A x,A y    ){A r=ma(0,2);*r->A=mh(x);r->A[1]=mh(y);              R r;} //
 S A a3(A x,A y,A z){A r=ma(0,3);*r->A=mh(x);r->A[1]=mh(y);r->A[2]=mh(z);R r;} //triplet
 S A mon(A x){R xt==107&&xn==2?cv[*xC][1]:x;} //monadic version of verb, eg + -> +:
 S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(2,p,q-p);C b[256];*b='\n'; //parse error
-            L k=min(s-p,Z(b));F(k)b[i+1]='_';b[k+1]='^';b[k+2]='\n';write(2,b,k+3);ee("parse",1);}
+            L k=min(s-p,Z(b));F(k)b[i+1]='_';b[k+1]='^';b[k+2]='\n';write(2,b,k+3);er("parse");}
 S A prs(){ //parse
   A t[64];L n=0,g=0; //t:sequence of nouns/verbs, n:how many, g:bitset of grammatical categories (0=noun,1=verb)
   W(1){
@@ -124,7 +124,7 @@ S A prs(){ //parse
     E{ep(1);R 0;}
     J(!x)B;t[n++]=x;g=g<<1|gx;
   }
-  if(!n||(g&1)){ee("nyi",1);R 0;}
+  if(!n||(g&1)){er("nyi");R 0;}
   A z=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){z=a3(t[n-1],t[n-2],z);n-=2;g>>=2;}E{z=a2(mon(t[--n]),z);g>>=1;}}R z;
 }
 
@@ -133,15 +133,15 @@ S A apply(A x){
   A y=*xA;
   J(yt==107){
     Y(*yC){
-      Q'-':{J(xn!=3){ee("rank",1);R 0;}
-            J(abs(xA[1]->t)!=6||abs(xA[2]->t)!=6){ee("type",1);R 0;}
+      Q'-':{J(xn!=3){er("rank");R 0;}
+            J(abs(xA[1]->t)!=6||abs(xA[2]->t)!=6){er("type");R 0;}
             A z=ma(-6,1);*zL=*xA[1]->L-*xA[2]->L;R z;}
     }
   }
-  ee("nyi",1);R 0;
+  er("nyi");R 0;
 }
 S A eval(A x){
-  J(xt==-11){ee("nyi-var",1);R 0;}
+  J(xt==-11){er("nyi-var");R 0;}
   J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
   J(xt||!xn)R mh(x);
   A y=ma(0,xn);F(xn)yA[i]=eval(xA[i]);R apply(y);
@@ -170,9 +170,9 @@ asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
 V go(I ac,C**av){
   mi();ci();
   J(av[1]){ //file.k
-    I f=open(av[1],0,0);ee("open",f<0);L h[18];L r=fstat(f,h);ee("fstat",r);L n=h[6];ee("empty",!n);
-    C*s=(C*)mmap(0,n,3,0x4002,f,0);ee("mmap",s==(V*)-1);r=close(f);ee("close",r);ee("eof",s[n-1]!='\n');
-    s[n-1]=0;exec(s);r=munmap(s,n);ee("munmap",r);
+    I f=open(av[1],0,0);J(f<0)er("open");L h[18];L r=fstat(f,h);J(r)er("fstat");L n=h[6];J(!n)er("empty");
+    C*s=(C*)mmap(0,n,3,0x4002,f,0);J(s==(V*)-1)er("mmap");r=close(f);J(r)er("close");J(s[n-1]!='\n')er("eof");
+    s[n-1]=0;exec(s);r=munmap(s,n);J(r)er("munmap");
   }
   C b[256];I nb=0,k; //repl:
   W((k=read(0,b,256-nb))>0){C*p=b,*q=b+nb,*r=q+k;W(q<r){J(*q=='\n'){*q=0;exec(p);p=q+1;}q++;}mc(b,p,nb=q-p);}
