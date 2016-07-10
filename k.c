@@ -147,9 +147,9 @@ S A eval(A x){
 
 //output
 S C ob[0x400];S L on=0;                    //buffer
-S V ofl(){write(1,ob,on);on=0;}            //flush
+S V ofl(){J(on){write(1,ob,on);on=0;}}     //flush
 S V oC(C x){J(on==Z(ob))ofl();ob[on++]=x;} //output char
-S V oS(C*x,L n){W(n>Z(ob)-on){mc(ob+on,x,Z(ob)-on);x+=Z(ob)-on;n-=Z(ob)-on;ofl();}J(n){mc(ob+on,x,n);on+=n;}} //string
+S V oS(C*x,L n){J(n>Z(ob)-on){ofl();write(1,x,n);}E{mc(ob+on,x,n);on+=n;}} //string
 S V oL(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';oS(u+1,b+31-u);} //output number
 S V oA(A x){Y(abs(xt)){                    //output array
   Q 6:J(xn){F(xn){J(i)oC(' ');oL(xL[i]);}}E{oS("!0",2);}B;
