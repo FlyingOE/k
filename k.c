@@ -73,6 +73,7 @@ S V ms(V*x,C y,L z){C*p=x;F(z,*p++=y);}
 S L mz(A x){R(max(1,xn)*Z(L));}
 S A ma(C t,L n){A x=mp;xr=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}
 S V mf(A x){J(--xr)R;J(!xt)F(max(1,xn),mf(xA[i]));ms(x,0xaa,Z(*x)+mz(x));}
+S A mh(A x){xr++;R x;}
 
 //parser
 S C*s0,*s;
@@ -98,6 +99,15 @@ S A prs(C*x){
   ee("parse",1);R 0;
 }
 
+//eval&apply
+S A apply(A x){ee("nyi-apply",1);R 0;}
+S A eval(A x){
+  J(xt==-11){ee("nyi-var",1);R 0;}
+  J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
+  J(xt||!xn)R mh(x);
+  A y=ma(0,xn);F(xn,yA[i]=eval(xA[i]));R apply(y);
+}
+
 //output
 S C ob[0x400];S L on=0;
 S V ofl(){write(1,ob,on);on=0;}
@@ -113,7 +123,7 @@ S V oA(A x){Y(abs(xt)){
 S V out(A x){oA(x);oC('\n');ofl();}
 
 //main
-S V exec(C*x){J(*x=='\\'&&!x[1])exit(0);out(prs(x));}
+S V exec(C*x){J(*x=='\\'&&!x[1])exit(0);A t=prs(x),r=eval(t);mf(t);out(r);mf(r);}
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
 V go(I ac,C**av){
   mi();
