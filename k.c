@@ -131,12 +131,19 @@ S A prs(){ //parse
 //eval&apply
 S A apply(A x){
   A y=*xA;
-  J(yt==107){
-    Y(*yC){
-      Q'-':{J(xn!=3){er("rank");R 0;}
-            J(abs(xA[1]->t)!=6||abs(xA[2]->t)!=6){er("type");R 0;}
-            A z=ma(-6,1);*zL=*xA[1]->L-*xA[2]->L;R z;}
-    }
+  Y(yt){
+    Q 106:
+      J(xn!=2){er("rank");R 0;}
+      Y(*yC){
+        Q'-':{J(abs(xA[1]->t)!=6){er("type");R 0;}A z=ma(-6,1);*zL=-*xA[1]->L;R z;}
+      }
+      B;
+    Q 107:
+      J(xn!=3){er("rank");R 0;}
+      Y(*yC){
+        Q'-':{J(abs(xA[1]->t)!=6||abs(xA[2]->t)!=6){er("type");R 0;}A z=ma(-6,1);*zL=*xA[1]->L-*xA[2]->L;R z;}
+      }
+      B;
   }
   er("nyi");R 0;
 }
