@@ -1,6 +1,7 @@
 #define B break
 #define D default
 #define F(n) for(L _n=(n),i=0;i<_n;i++)
+#define FS(s) for(C c,*_p=s;(c=*_p);_p++)
 #define J if
 #define E else
 #define Q case
@@ -45,22 +46,22 @@ S V pm(V*x,V*y){
 }
 
 //array header
-T struct{L z,r,n,t;}*A;
-#define xr ((x)->r)
-#define yr ((y)->r)
-#define zr ((z)->r)
-#define xn ((x)->n)
-#define yn ((y)->n)
-#define zn ((z)->n)
-#define xt ((x)->t)
-#define yt ((y)->t)
-#define zt ((z)->t)
-#define xA ((A*)(x+1))
-#define yA ((A*)(y+1))
-#define zA ((A*)(z+1))
+T struct{L r,n,t;}*A;
+#define xr (x->r)
+#define yr (y->r)
+#define zr (z->r)
+#define xn (x->n)
+#define yn (y->n)
+#define zn (z->n)
+#define xt (x->t)
+#define yt (y->t)
+#define zt (z->t)
 #define xL ((L*)(x+1))
 #define yL ((L*)(y+1))
 #define zL ((L*)(z+1))
+#define xA ((A*)(x+1))
+#define yA ((A*)(y+1))
+#define zA ((A*)(z+1))
 #define xC ((C*)(x+1))
 #define yC ((C*)(y+1))
 #define zC ((C*)(z+1))
@@ -74,6 +75,18 @@ S L mz(A x){R(max(1,xn)*Z(L));}
 S A ma(C t,L n){A x=mp;xr=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}
 S V mf(A x){J(--xr)R;J(!xt)F(max(1,xn))mf(xA[i]);ms(x,0xaa,Z(*x)+mz(x));}
 S A mh(A x){xr++;R x;}
+
+//constants
+S A ca0,cl0,cc0,cy0,cc[256],cv[128][2];
+S V ci(){
+  cl0=ma( 6,0);*(L*)(cl0+1)=0;
+  cc0=ma(10,0);*(C*)(cc0+1)=' ';
+  cy0=ma(11,0);*(L*)(cy0+1)=0;
+  ca0=ma( 0,0);*(A*)(ca0+1)=mh(cc0);
+  F(256){A x=cc[i]=ma(-10,1);*xC=i;}
+  FS("!#$%&*+,<=>?@^_|~:.-")F(2){A x=cv[c][i]=ma(107-i,2-i);*xC=c;}
+  FS("'\\/"                )F(2){A x=cv[c][i]=ma(108  ,  1);*xC=c;}
+}
 
 //parser
 S C*s0,*s;
@@ -90,10 +103,10 @@ S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(2
 S A prs(C*x){
   s=s0=x;
   J(ltr(*s)){L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}A x=ma(-11,1);*xL=v;R x;}
-  J(*s=='`'){A x=ma(11,0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}R x;}
-  J(*s=='"'){s++;A x=ma(10,0);W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
+  J(*s=='`'){A x=mh(cy0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}R x;}
+  J(*s=='"'){s++;A x=mh(cc0);W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
              ep(!*s);s++;R x;}
-  J(num(s)){A x=ma(6,0);
+  J(num(s)){A x=mh(cl0);
             W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
             J(xn==1)xt=-xt;R x;}
   ee("parse",1);R 0;
@@ -126,7 +139,7 @@ S V out(A x){oA(x);oC('\n');ofl();}
 S V exec(C*x){J(*x=='\\'&&!x[1])exit(0);A t=prs(x),r=eval(t);mf(t);out(r);mf(r);}
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
 V go(I ac,C**av){
-  mi();
+  mi();ci();
   J(av[1]){I f=open(av[1],0,0);ee("open",f<0);L h[18];L r=fstat(f,h);ee("fstat",r);L n=h[6];ee("empty",!n);
            C*s=(C*)mmap(0,n,3,0x4002,f,0);ee("mmap",s==(V*)-1);r=close(f);ee("close",r);ee("eof",s[n-1]!='\n');
            s[n-1]=0;exec(s);r=munmap(s,n);ee("munmap",r);}
