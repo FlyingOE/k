@@ -180,7 +180,14 @@ S V oA(A x){Y(abs(xt)){                    //output array
 S V out(A x){oA(x);oC('\n');ofl();}
 
 //main
-S V exec(C*x){J(*x=='\\'&&!x[1])exit(0);s=s0=x;A t=prs(';'),r=eval(t);mf(t);out(r);mf(r);}
+S V exec(C*x){
+  J(*x=='\\')Y(x[1]){
+    Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);R;
+    Q 0:exit(0);
+    D:er("syscmd");R;
+  }
+  s=s0=x;A t=prs(';'),r=eval(t);mf(t);out(r);mf(r);
+}
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
 V go(I ac,C**av){
   mi();ci();
