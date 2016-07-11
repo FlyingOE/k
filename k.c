@@ -175,6 +175,7 @@ S V oA(A x){Y(abs(xt)){                    //output array
         E{oC('"');F(xn){C c=esc(xC[i]);J(c){oC('\\');oC(c);}E{oC(xC[i]);}}oC('"');}
         B;}
   Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
+  Q 106:Q 107:Q 108:oC(*xC);J(x==cv[*xC][1])oC(':');B;
   D:oS("???",3);B;
 }}
 S V out(A x){oA(x);oC('\n');ofl();}
