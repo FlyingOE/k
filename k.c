@@ -179,21 +179,24 @@ S A pen2(C f,A x,A y){
   }
   en();R 0;
 }
-S A apply(A x){
-  A y=*xA;
-  Y(yt){
-    Q 106:
-      J(xn!=2){er("rank");R 0;}
-      Y(*yC){
-        Q'-':R pen1(*yC,xA[1]);
+S A apply(A a){
+  A f=*a->A;
+  Y(f->t){
+    Q 106:{
+      J(a->n!=2){er("rank");R 0;}A x=a->A[1];
+      Y(*f->C){
+        Q'-':R pen1(*f->C,x);
+        Q'!':{J(xt!=-6){en();R 0;}L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}
       }
       B;
-    Q 107:
-      J(xn!=3){er("rank");R 0;}
-      Y(*yC){
-        Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*yC,xA[1],xA[2]);
+    }
+    Q 107:{
+      J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];
+      Y(*f->C){
+        Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
       }
       B;
+    }
   }
   en();R 0;
 }
