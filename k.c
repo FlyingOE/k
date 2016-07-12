@@ -118,7 +118,7 @@ S A prs(C l){ //parse
       E J(c=='`'){x=mh(cy0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}}
       E J(c=='"'){x=mh(cc0);s++;W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
                   ep(!*s);s++;J(xn==1)xt=-xt;}
-      E J(c=='0'&&s[1]=='x'){x=mh(cc0);s+=2;W(hdg(*s)&&hdg(s[1])){x=addC(x,unh(*s)<<4|unh(s[1]));s+=2;}}
+      E J(c=='0'&&s[1]=='x'){x=mh(cc0);s+=2;W(hdg(*s)&&hdg(s[1])){x=addC(x,unh(*s)<<4|unh(s[1]));s+=2;}J(xn==1)xt=-xt;}
       E J(num(s)&&(*s!='-'||s==s0||(!ldg(s[-1])&&s[-1]!=')'))){
                   x=mh(cl0);W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');
                                  x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
@@ -165,19 +165,22 @@ S A eval(A x){
 S C ob[0x400];S L on=0;                    //buffer
 S V ofl(){J(on){write(1,ob,on);on=0;}}     //flush
 S V oC(C x){J(on==Z(ob))ofl();ob[on++]=x;} //output char
-S V oS(C*x,L n){J(n>Z(ob)-on){ofl();write(1,x,n);}E{mc(ob+on,x,n);on+=n;}} //string
+S V oS(C*x,L n){J(n>Z(ob)-on){ofl();write(1,x,n);}E{mc(ob+on,x,n);on+=n;}} //output string
 S V oL(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';oS(u+1,b+31-u);} //output number
-S V oA(A x){Y(abs(xt)){                    //output array
-  Q 0:oC('(');F(xn){J(i)oC(';');oA(xA[i]);}oC(')');B;
-  Q 6:J(xn){F(xn){J(i)oC(' ');oL(xL[i]);}}E{oS("!0",2);}B;
-  Q 10:{I h=0;F(xn)J((xC[i]<32||126<xC[i])&&!esc(xC[i])){h=1;B;}
-        J(h){oS("0x",2);F(xn){oC(hex(xC[i]>>4&15));oC(hex(xC[i]&15));}}
-        E{oC('"');F(xn){C c=esc(xC[i]);J(c){oC('\\');oC(c);}E{oC(xC[i]);}}oC('"');}
-        B;}
-  Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
-  Q 106:Q 107:Q 108:oC(*xC);J(x==cv[*xC][1])oC(':');B;
-  D:oS("???",3);B;
-}}
+S V oA(A x){ //output array
+  J(xn==1&&0<=xt&&xt<100)oC(',');
+  Y(abs(xt)){
+    Q 0:J(xn==1){oA(*xA);}E{oC('(');F(xn){J(i)oC(';');oA(xA[i]);}oC(')');}B;
+    Q 6:J(xn){F(xn){J(i)oC(' ');oL(xL[i]);}}E{oS("!0",2);}B;
+    Q 10:{I h=0;F(xn)J((xC[i]<32||126<xC[i])&&!esc(xC[i])){h=1;B;}
+          J(h){oS("0x",2);F(xn){oC(hex(xC[i]>>4&15));oC(hex(xC[i]&15));}}
+          E{oC('"');F(xn){C c=esc(xC[i]);J(c){oC('\\');oC(c);}E{oC(xC[i]);}}oC('"');}
+          B;}
+    Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
+    Q 106:Q 107:Q 108:oC(*xC);J(x==cv[*xC][1])oC(':');B;
+    D:oS("???",3);B;
+  }
+}
 S V out(A x){oA(x);oC('\n');ofl();}
 
 //main
