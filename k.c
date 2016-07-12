@@ -5,7 +5,7 @@
 #define FA(x,b) {Y((x)->t){Q 0:     F((x)->n){A u=(x)->A[i];b;}B;\
                            Q 6:Q 11:F((x)->n){A u=ma(-(x)->t,1);*(u)->L=(x)->L[i];b;mf(u);}B;\
                            Q 10:    F((x)->n){A u=cc[(x)->C[i]];b;}B;\
-                           D:er("nyi");}}
+                           D:en();}}
 #define FS(s) for(C c,*_p=s;(c=*_p);_p++)
 #define J if
 #define Q case
@@ -31,7 +31,6 @@ H(read,I,V*,I)H(write,I,C*,I)H(open,C*,I,I)H(close,I)H(fstat,I,V*)H4(mmap,V*,L,I
 V exit(I);asm("exit:mov $60,%rax\nsyscall");
 
 //utils
-#define er(m){write(2,"'"m"\n",2+Z(m));exit(1);} //error
 S L min(L x,L y){R x>y?x:y;}
 S L max(L x,L y){R x>y?x:y;}
 S L abs(L x){R x>0?x:-x;}
@@ -70,6 +69,11 @@ T struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length
 #define yC (y->C)
 #define zC (z->C)
 
+//error handling
+#define er(m){write(2,"'"m"\n",2+Z(m));exit(1);}
+#define en() er("nyi")
+#define el() er("length")
+
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp;                                                              //pointer to free memory
 S V mi(){mp0=mp=(V*)mmap(0,1L<<46,3,0x4022,-1,0);J((L)mp<0)er("mm");}     //init
@@ -97,7 +101,7 @@ S A sqz(A x){
   J(xt)R x;L t=xA[0]->t;J(t>=0)R x;F(xn)J(t!=xA[i]->t)R x;A z=ma(-t,xn);
   Y(t){Q-6:Q-11:F(xn)zL[i]=*xA[i]->L;R z;
        Q-10:    F(xn)zC[i]=*xA[i]->C;R z;
-       D:er("nyi");R 0;}
+       D:en();R 0;}
 }
 
 //parser
@@ -139,7 +143,7 @@ S A prs(C l){ //parse
       E J(c!=')'&&c!=']'&&c!='}'&&c!=';'&&c!='\n'&&c){ep(1);R 0;}
       J(!x)B;t[n++]=x;g=g<<1|gx;
     }
-    if(!n||(g&1)){er("nyi");R 0;}
+    if(!n||(g&1)){en();R 0;}
     A y=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){y=a3(t[n-1],t[n-2],y);n-=2;g>>=2;}E{y=a2(mon(t[--n]),y);g>>=1;}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
@@ -152,13 +156,13 @@ S A pen1(C f,A x){ //penetrate
   J(abs(xt)==6){
     A z=ma(xt,xn);L*p=xL,*r=zL,*r1=r+xn;
     #define H(h,e) Q h:W(r<r1){L u=*p;*r++=e;p++;}R z;
-      Y(f){H('-',-u)D:er("nyi");R 0;}
+      Y(f){H('-',-u)D:en();R 0;}
     #undef H
   }
-  er("nyi");R 0;
+  en();R 0;
 }
 S A pen2(C f,A x,A y){
-  L n=max(xn,yn);J(xt>=0&&yt>=0&&xn!=yn)er("length");
+  L n=max(xn,yn);J(xt>=0&&yt>=0&&xn!=yn){el();R 0;}
   J(!xt||!yt){
     A z=ma(0,n);
     J  (xt<0)FA(y,{zA[i]=pen2(f,x    ,u);})
@@ -167,12 +171,12 @@ S A pen2(C f,A x,A y){
     E        FA(x,{zA[i]=pen2(f,u,yA[i]);})
     R sqz(z);
   }E J(abs(xt)==6&&abs(yt)==6){
-    A z=ma(max(xt,yt),n);J(xt>0&&yt>0&&xn!=yn)er("length");L*p=xL,*q=yL,*r=zL,*r1=r+n,dp=xt>0,dq=yt>0;
+    A z=ma(max(xt,yt),n);J(xt>0&&yt>0&&xn!=yn){el();R 0;}L*p=xL,*q=yL,*r=zL,*r1=r+n,dp=xt>0,dq=yt>0;
     #define H(h,e) Q h:W(r<r1){L u=*p,v=*q;*r++=e;p+=dp;q+=dq;}R z;
-    Y(f){H('+',u+v)H('-',u-v)H('*',u*v)H('%',u/v)H('&',min(u,v))H('|',max(u,v))H('=',u==v)H('<',u<v)H('>',u>v)D:er("nyi");}
+    Y(f){H('+',u+v)H('-',u-v)H('*',u*v)H('%',u/v)H('&',min(u,v))H('|',max(u,v))H('=',u==v)H('<',u<v)H('>',u>v)D:en();R 0;}
     #undef H
   }
-  er("nyi");R 0;
+  en();R 0;
 }
 S A apply(A x){
   A y=*xA;
@@ -190,10 +194,10 @@ S A apply(A x){
       }
       B;
   }
-  er("nyi");R 0;
+  en();R 0;
 }
 S A eval(A x){
-  J(xt==-11){er("nyi-var");R 0;}
+  J(xt==-11){en();R 0;}
   J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
   J(xt||!xn)R mh(x);
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1]);R sqz(z);}
