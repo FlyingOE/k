@@ -70,7 +70,7 @@ T struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length
 #define zC (z->C)
 
 //error handling
-#define er(m){write(2,"'"m"\n",2+Z(m));exit(1);}
+#define er(m){write(1,"'"m"\n",2+Z(m));exit(1);}
 #define en() er("nyi")
 #define el() er("length")
 
@@ -144,8 +144,11 @@ S A prs(C l){ //parse
       E J(c!=')'&&c!=']'&&c!='}'&&c!=';'&&c!='\n'&&c){ep(1);R 0;}
       J(!x)B;t[n++]=x;g=g<<1|gx;
     }
-    if(!n||(g&1)){en();R 0;}
-    A y=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){y=a3(t[n-1],t[n-2],y);n-=2;g>>=2;}E{y=a2(mon(t[--n]),y);g>>=1;}}
+    A y=0;
+    J(!n){y=cv[':'][1];}
+    E J(!(g&1)){y=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){y=a3(t[n-1],t[n-2],y);n-=2;g>>=2;}E{y=a2(mon(t[--n]),y);g>>=1;}}}
+    E J(g&1){W(n){A x;J(n>1&&(g&3)==1){x=a2(t[n-1],t[n-2]);n-=2;g>>=2;xt=103;}E{x=t[--n];}
+                      J(y){y=a2(x,y);yt=104;yn=yA[1]->t;}E{y=x;}}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
   J(l==';'&&zn==2){A u=z;z=mh(zA[1]);mf(u);}R z;
@@ -224,6 +227,8 @@ S V oA(A x){ //output array
           E{oC('"');F(xn){C c=esc(xC[i]);J(c){oC('\\');oC(c);}E{oC(xC[i]);}}oC('"');}
           B;}
     Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
+    Q 103:oA(*xA);oC('[');oA(xA[1]);oC(']');B;
+    Q 104:oA(*xA);oA(xA[1]);B;
     Q 106:Q 107:Q 108:oC(*xC);J(x==cv[*xC][1])oC(':');B;
     D:oS("???",3);B;
   }
