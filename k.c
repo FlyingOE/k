@@ -206,6 +206,7 @@ S A eval(A x){
   J(xt==-11){en();R 0;}
   J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
   J(xt||!xn)R mh(x);
+  J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1]));R eval(xA[xn-1]);}
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1]);R sqz(z);}
   A y=ma(0,xn);F(xn)yA[i]=eval(xA[i]);R apply(y);
 }
