@@ -194,6 +194,12 @@ S A apply(A a){
                B;}
         Q 106:{J(a->n!=2){er("rank");R 0;}A x=a->A[1];
                Y(*f->C){Q'-':R pen1(*f->C,x);
+                        Q'#':{A z=ma(-6,1);*zL=xn;R z;}
+                        Q'@':{A z=ma(-6,1);*zL=xt;R z;}
+                        Q',':J(xt<0){A z=ma(-xt,1);mc(zC,xC,mz(z));R z;}E{R a1(x);}
+                        Q'*':Y(abs(xt)){Q 0:R mh(*xA);
+                                        Q 6:Q 10:Q 11:{A z=ma(-abs(xt),1);xt==10?(*zC=*xC):(*zL=*xL);R z;}
+                                        D:en();}
                         Q'!':{J(xt!=-6){en();R 0;}L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
                B;}
         Q 107:{J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];
