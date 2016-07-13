@@ -31,7 +31,7 @@ H(read,I,V*,I)H(write,I,C*,I)H(open,C*,I,I)H(close,I)H(fstat,I,V*)H4(mmap,V*,L,I
 V exit(I);asm("exit:mov $60,%rax\nsyscall");
 
 //utils
-S L min(L x,L y){R x>y?x:y;}
+S L min(L x,L y){R x<y?x:y;}
 S L max(L x,L y){R x>y?x:y;}
 S L abs(L x){R x>0?x:-x;}
 S L len(C*x){C*p=x;W(*x)x++;R x-p;}
@@ -128,7 +128,7 @@ S A prs(C l){ //parse
   W(1){
     A t[64];L n=0,g=0; //t:sequence of nouns/verbs, n:how many, g:bitset of grammatical categories (0=noun,1=verb)
     W(1){
-      A x=0;L gx=0;ep(0x80&*s);W(*s==' ')s++;J(*s=='/')W(*s&&*s!='\n')s++;C c=*s; //skip whitespace and comments
+      A x=0;L gx=0;ep(0x80&*s);W(*s==' '){s++;J(*s=='/')W(*s&&*s!='\n')s++;}C c=*s;
       J(!c)B; //eof?
       E J(ltr(c)){x=ma(-11,1);L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}*xL=v;}
       E J(c=='`'){x=mh(cy0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}}
@@ -142,7 +142,11 @@ S A prs(C l){ //parse
       E J(c<127&&cv[c][0]){I u=s[1]==':';x=mh(cv[c][u]);s+=1+u;gx=1;}
       E J(c=='('||c=='['||c=='{'){s++;x=prs(s[-1]);ep(*s!=')'&&*s!=']'&&*s!='}');s++;J(xn==2){A y=x;x=mh(xA[1]);mf(y);}}
       E J(c!=')'&&c!=']'&&c!='}'&&c!=';'&&c!='\n'&&c){ep(1);R 0;}
-      J(!x)B;t[n++]=x;g=g<<1|gx;
+      J(!x)B;
+      C m=1;W(m)Y(*s){Q'\\':Q'/':Q'\'':{C c=*s++,u=*s==':';s+=u;x=a2(cv[c][u],x);gx=1;B;}
+                      Q'[':{s++;A u=x;x=prs('[');*xA=u;ep(*s!=']');s++;gx=0;B;}
+                      D:m=0;B;}
+      t[n++]=x;g=g<<1|gx;
     }
     A y=0;
     J(!n){y=cv[':'][1];}
@@ -183,24 +187,19 @@ S A pen2(C f,A x,A y){
   en();R 0;
 }
 S A apply(A a){
-  A f=*a->A;
-  Y(f->t){
-    Q 106:{
-      J(a->n!=2){er("rank");R 0;}A x=a->A[1];
-      Y(*f->C){
-        Q'-':R pen1(*f->C,x);
-        Q'!':{J(xt!=-6){en();R 0;}L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}
-      }
-      B;
-    }
-    Q 107:{
-      J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];
-      Y(*f->C){
-        Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
-      }
-      B;
-    }
-  }
+  A f=*a->A;L ft=f->t;
+  Y(ft){Q 105:{A x=a->A[1];
+               Y(f->A[0]->C[0]){
+                 Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(ff,z,u);A r=apply(h);mf(z);z=r;mf(h);}E{z=mh(u);}});R z;}}
+               B;}
+        Q 106:{J(a->n!=2){er("rank");R 0;}A x=a->A[1];
+               Y(*f->C){Q'-':R pen1(*f->C,x);
+                        Q'!':{J(xt!=-6){en();R 0;}L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
+               B;}
+        Q 107:{J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];
+               Y(*f->C){Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);}
+               B;}
+        Q 108:{A z=ma(105,2);*zA=f;zA[1]=a->A[1];R z;B;}}
   en();R 0;
 }
 S A eval(A x){
@@ -229,6 +228,7 @@ S V oA(A x){ //output array
     Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
     Q 103:oA(*xA);oC('[');oA(xA[1]);oC(']');B;
     Q 104:oA(*xA);oA(xA[1]);B;
+    Q 105:oA(xA[1]);oA(*xA);
     Q 106:Q 107:Q 108:oC(*xC);J(x==cv[*xC][1])oC(':');B;
     D:oS("???",3);B;
   }
