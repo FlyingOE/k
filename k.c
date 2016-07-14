@@ -168,7 +168,7 @@ S A prs(C l){ //parse
                       J(y){y=a2(x,y);yt=104;yn=yA[1]->t;}E{y=x;}}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
-  J(l==';'&&zn==2){A u=z;z=mh(zA[1]);mf(u);}R z;
+  J(l==';'){A y=zA[zn-1];J(!yt&&*yA==cv[':'][0])z=addA(z,cv[':'][1]);J(zn==2){A u=z;z=mh(zA[1]);mf(u);}}R z;
 }
 
 //evaluation
@@ -259,7 +259,7 @@ S V oA(A x){ //output array
     D:oS("???",3);B;
   }
 }
-S V out(A x){oA(x);oC('\n');ofl();}
+S V out(A x){J(x!=cv[':'][1]){oA(x);oC('\n');ofl();}}
 
 //main
 S V exec(C*x,A*l,A*g){
