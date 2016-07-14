@@ -73,6 +73,7 @@ T struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length
 #define er(m){write(1,"'"m"\n",2+Z(m));exit(1);}
 #define en() er("nyi")
 #define el() er("length")
+#define et() er("type")
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp;                                                              //pointer to free memory
@@ -85,12 +86,13 @@ S V mf(A x){J(--xr)R;J(!xt)F(max(1,xn))mf(xA[i]);ms(x,0xaa,Z(*x)+mz(x));} //free
 S A mh(A x){xr++;R x;}                                                    //hold (inc refcount)
 
 //constants
-S A ca0,cl0,cc0,cy0,cc[256],cv[128][2];
+S A ca0,cl0,cc0,cy0,cd0,cc[256],cv[128][2];
 S V ci(){ //init
   A x=cl0=ma( 6,0);*xL=0;       //!0
     x=cc0=ma(10,0);*xC=' ';     //""
     x=cy0=ma(11,0);*xL=0;       //0#`
     x=ca0=ma( 0,0);*xA=mh(cc0); //()
+    x=cd0=ma(99,2);*xA=mh(cy0);xA[1]=mh(ca0); //(0#`)!()
   F(256){x=cc[i]=ma(-10,1);*xC=i;} //chars
   ms(cv,0,Z(cv));
   F(2)FS("!#$%&*+,<=>?@^_|~:.-"){x=cv[c][i]=ma(107-i,2-i);*xC=c;} //verbs
@@ -104,12 +106,23 @@ S A a3(A x,A y,A z){A r=ma(0,3);*r->A=mh(x);r->A[1]=mh(y);r->A[2]=mh(z);R r;} //
 S A addC(A x,C y){A z=ma(xt,xn+1);mc(zC,xC,mz(x));zC[xn]=y;mf(x);R z;}
 S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
 S A addA(A x,A y){A z=ma(xt,xn+1);mc(zA,xA,mz(x));zA[xn]=y;F(zn)mh(zA[i]);mf(x);R z;}
-S A sqz(A x){
-  J(xt)R x;L t=xA[0]->t;J(t>=0)R x;F(xn)J(t!=xA[i]->t)R x;A z=ma(-t,xn);
-  Y(t){Q-6:Q-11:F(xn)zL[i]=*xA[i]->L;R z;
-       Q-10:    F(xn)zC[i]=*xA[i]->C;R z;
-       D:en();R 0;}
-}
+S A sqz(A x){J(xt)R x;L t=xA[0]->t;J(t>=0)R x;F(xn)J(t!=xA[i]->t)R x;A z=ma(-t,xn);
+             Y(t){Q-6:Q-11:F(xn)zL[i]=*xA[i]->L;R z;
+                  Q-10:    F(xn)zC[i]=*xA[i]->C;R z;
+                  D:en();R 0;}}
+S A amend(A x,L i,A v){Y(xt){Q 0:J(x->r<2){mf(xA[i]);xA[i]=mh(v);R x;}
+                                 E{A z=ma(xt,xn);mc(zA,xA,mz(x));zA[i]=v;F(zn)mh(zA[i]);mf(x);R z;}
+                             D:en();R 0;}}
+S A dget(A d,L k){A x=d->A[0],y=d->A[1];
+                  F(xn)J(xL[i]==k)Y(yt){Q 0:R mh(yA[i]);
+                                        Q 6:Q 11:{A z=ma(-yt,1);*zL=yL[i];R z;}
+                                        Q 10:    {A z=ma(-yt,1);*zC=yC[i];R z;}
+                                        D:en();R 0;}
+                  R 0;}
+S A dput(A d,L k,A v){A x=d->A[0],y=d->A[1];L i=0,n=xn;W(i<n&&xL[i]!=k)i++;
+                      A z=i<n?a2(x,amend(mh(y),i,v)):a2(addL(x,k),addA(mh(y),v));zt=99;mf(x);R z;}
+S A ext(A x,L n){J(xt>=0)R x;A z=ma(abs(xt),n);L k=mz(x),l=mz(z);
+                 mc(zC,xC,k);W(2*k<l){mc(zC+k,zC,k);k*=2;}mc(zC+k,zC,l-k);R z;}
 
 //parser
 S C*s0,*s; //k source
@@ -200,21 +213,26 @@ S A apply(A a){
                         Q'*':Y(abs(xt)){Q 0:R mh(*xA);
                                         Q 6:Q 10:Q 11:{A z=ma(-abs(xt),1);xt==10?(*zC=*xC):(*zL=*xL);R z;}
                                         D:en();}
-                        Q'!':{J(xt!=-6){en();R 0;}L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
+                        Q'!':{J(xt!=-6){en();R 0;}
+                              L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
                B;}
         Q 107:{J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];
-               Y(*f->C){Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);}
+               Y(*f->C){Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
+                        Q'!':{J(abs(xt)!=11){et();R 0;}J(xt>=0&&yt>=0&&xn!=yn){el();R 0;}
+                              J(xt<0){x=ext(x,1);y=a1(y);}E{mh(x);y=ext(y,xn);}
+                              A z=a2(x,y);mf(x);mf(y);zt=99;R z;}}
                B;}
         Q 108:{A z=ma(105,2);*zA=f;zA[1]=a->A[1];R z;B;}}
   en();R 0;
 }
-S A eval(A x){
-  J(xt==-11){en();R 0;}
+S A eval(A x,A*l,A*g){
+  J(xt==-11){A z=dget(*l,*xL);J(!z)z=dget(*g,*xL);J(!z){er("value");R 0;};R mh(z);}
   J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
   J(xt||!xn)R mh(x);
-  J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1]));R eval(xA[xn-1]);}
-  J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1]);R sqz(z);}
-  A y=ma(0,xn);F(xn)yA[i]=eval(xA[i]);R apply(y);
+  J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1],l,g));R eval(xA[xn-1],l,g);}
+  J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1],l,g);R sqz(z);}
+  J(*xA==cv[':'][0]&&xn==3){A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,z);R z;}}//assignment
+  A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y);
 }
 
 //output
@@ -233,9 +251,10 @@ S V oA(A x){ //output array
           E{oC('"');F(xn){C c=esc(xC[i]);J(c){oC('\\');oC(c);}E{oC(xC[i]);}}oC('"');}
           B;}
     Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
+    Q 99:J(xA[0]->n>1){oA(*xA);oC('!');oA(xA[1]);}E{oC('(');oA(*xA);oS(")!",2);oA(xA[1]);}B;
     Q 103:oA(*xA);oC('[');oA(xA[1]);oC(']');B;
     Q 104:oA(*xA);oA(xA[1]);B;
-    Q 105:oA(xA[1]);oA(*xA);
+    Q 105:oA(xA[1]);oA(*xA);B;
     Q 106:Q 107:Q 108:oC(*xC);J(x==cv[*xC][1])oC(':');B;
     D:oS("???",3);B;
   }
@@ -243,23 +262,23 @@ S V oA(A x){ //output array
 S V out(A x){oA(x);oC('\n');ofl();}
 
 //main
-S V exec(C*x){
+S V exec(C*x,A*l,A*g){
   J(*x=='\\')Y(x[1]){
     Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);R;
     Q 0:exit(0);
     D:er("syscmd");R;
   }
-  s=s0=x;A t=prs(';'),r=eval(t);mf(t);out(r);mf(r);
+  s=s0=x;A t=prs(';'),r=eval(t,l,g);mf(t);out(r);mf(r);
 }
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
 V go(I ac,C**av){
-  mi();ci();
+  mi();ci();A l=mh(cd0),g=mh(cd0);
   J(av[1]){ //file.k
     I f=open(av[1],0,0);J(f<0)er("open");L h[18];L r=fstat(f,h);J(r)er("fstat");L n=h[6];J(!n)er("empty");
     C*s=(C*)mmap(0,n,3,0x4002,f,0);J(s==(V*)-1)er("mmap");r=close(f);J(r)er("close");J(s[n-1]!='\n')er("eof");
-    s[n-1]=0;exec(s);r=munmap(s,n);J(r)er("munmap");
+    s[n-1]=0;exec(s,&l,&g);r=munmap(s,n);J(r)er("munmap");
   }
   C b[256];I nb=0,k; //repl:
-  W((k=read(0,b,256-nb))>0){C*p=b,*q=b+nb,*r=q+k;W(q<r){J(*q=='\n'){*q=0;exec(p);p=q+1;}q++;}mc(b,p,nb=q-p);}
+  W((k=read(0,b,256-nb))>0){C*p=b,*q=b+nb,*r=q+k;W(q<r){J(*q=='\n'){*q=0;exec(p,&l,&g);p=q+1;}q++;}mc(b,p,nb=q-p);}
   exit(0);
 }
