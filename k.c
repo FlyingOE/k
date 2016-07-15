@@ -165,7 +165,7 @@ S A prs(C l){ //parse
     J(!n){y=cv[':'][1];}
     E J(!(g&1)){y=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){y=a3(t[n-1],t[n-2],y);n-=2;g>>=2;}E{y=a2(mon(t[--n]),y);g>>=1;}}}
     E J(g&1){W(n){A x;J(n>1&&(g&3)==1){x=a2(t[n-1],t[n-2]);n-=2;g>>=2;xt=103;}E{x=t[--n];}
-                      J(y){y=a2(x,y);yt=104;yn=yA[1]->t;}E{y=x;}}}
+                      J(y){y=a2(mon(x),y);yt=104;yn=yA[1]->t;}E{y=x;}}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
   J(l==';'){A y=zA[zn-1];J(!yt&&*yA==cv[':'][0])z=addA(z,cv[':'][1]);J(zn==2){A u=z;z=mh(zA[1]);mf(u);}}R z;
