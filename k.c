@@ -1,3 +1,23 @@
+typedef void V;typedef char C;typedef int I;typedef long long L;
+typedef struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
+#define xr (x->r)
+#define yr (y->r)
+#define zr (z->r)
+#define xn (x->n)
+#define yn (y->n)
+#define zn (z->n)
+#define xt (x->t)
+#define yt (y->t)
+#define zt (z->t)
+#define xL (x->L)
+#define yL (y->L)
+#define zL (z->L)
+#define xA (x->A)
+#define yA (y->A)
+#define zA (z->A)
+#define xC (x->C)
+#define yC (y->C)
+#define zC (z->C)
 #define B break
 #define D default
 #define E else
@@ -11,11 +31,9 @@
 #define Q case
 #define R return
 #define S static
-#define T typedef
 #define W while
 #define Y switch
 #define Z sizeof
-T void V;T char C;T int I;T long long L;
 
 //syscalls
 #include<syscall.h>
@@ -41,33 +59,10 @@ S V ps(C*x){write(2,x,len(x));} //for debugging
 S V ph(L x){C s[17];s[16]=0;F(16){s[15-i]=hex(x&15);x>>=4;}write(2,s,17);}
 #define pv(x) pv1(#x":",(L)(x))
 S L pv1(C*s,L x){write(2,s,len(s));ph((L)x);write(2,"\n",1);R x;}
-S V pm(V*x,V*y){
-  ph((L)x);ps(":");C s[3];*s=' ';
-  for(V*p=x;p<y;p++){L v=*(C*)p;s[1]=hex((v>>4)&15);s[2]=hex(v&15);write(2,s,3);
-                     J(!((L)p&31)){write(2,"\n",1);}E J(!((L)p&7)){write(2," ",1);}}
-  write(2,"\n",1);
-}
-
-//array header
-T struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
-#define xr (x->r)
-#define yr (y->r)
-#define zr (z->r)
-#define xn (x->n)
-#define yn (y->n)
-#define zn (z->n)
-#define xt (x->t)
-#define yt (y->t)
-#define zt (z->t)
-#define xL (x->L)
-#define yL (y->L)
-#define zL (z->L)
-#define xA (x->A)
-#define yA (y->A)
-#define zA (z->A)
-#define xC (x->C)
-#define yC (y->C)
-#define zC (z->C)
+S V pm(V*x,V*y){ph((L)x);ps(":");C s[3];*s=' ';
+                for(V*p=x;p<y;p++){L v=*(C*)p;s[1]=hex((v>>4)&15);s[2]=hex(v&15);write(2,s,3);
+                                   J(!((L)p&31)){write(2,"\n",1);}E J(!((L)p&7)){write(2," ",1);}}
+                write(2,"\n",1);}
 
 //error handling
 #define er(m){write(1,"'"m"\n",2+Z(m));exit(1);}
