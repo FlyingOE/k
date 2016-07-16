@@ -147,8 +147,8 @@ S A prs(C l){ //parse
                   J(xn==1)xt=-xt;}
       E J(c<127&&cv[c][0]){I u=s[1]==':';x=mh(cv[c][u]);s+=1+u;gx=1;}
       E J(c=='('&&s[1]==')'){s+=2;x=mh(ca0);}
-      E J(c=='('||c=='['||c=='{'){s++;x=prs(s[-1]);ep(*s!=')'&&*s!=']'&&*s!='}');s++;
-                                  J(xn==2&&c=='('){A y=x;x=mh(xA[1]);mf(y);}}
+      E J(c=='('){s++;x=prs(s[-1]);ep(*s!=')');s++;J(xn==2){A y=x;x=mh(xA[1]);mf(y);}}
+      E J(c=='{'){s++;x=prs(s[-1]);ep(*s!='}');s++;A y=x;x=ma(102,yn-1);F(xn)xA[i]=mh(yA[i+1]);mf(y);}
       E J(c!=')'&&c!=']'&&c!='}'&&c!=';'&&c!='\n'&&c){ep(1);R 0;}
       J(!x)B;
       C m=1;W(m)Y(*s){Q'\\':Q'/':Q'\'':{C c=*s++,u=*s==':';s+=u;x=a2(cv[c][u],x);gx=1;B;}
@@ -195,11 +195,14 @@ S A pen2(C f,A x,A y){
   }
   en();R 0;
 }
-S A apply(A a){
+S A eval(A,A*,A*);
+S V out(A);
+S A apply(A a,A*l,A*g){
   A f=*a->A;L ft=f->t;
-  Y(ft){Q 105:{A x=a->A[1];
+  Y(ft){Q 102:{A d=mh(cd0);F(f->n-2)mf(eval(f->A[i+1],&d,g));A z=eval(f->A[f->n-1],&d,g);mf(d);R z;}
+        Q 105:{A x=a->A[1];
                Y(f->A[0]->C[0]){
-                 Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(ff,z,a);A r=apply(h);mf(z);z=r;mf(h);}E{z=mh(a);}});R z;}}
+                 Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(ff,z,a);A r=apply(h,l,g);mf(z);z=r;mf(h);}E{z=mh(a);}});R z;}}
                B;}
         Q 106:{J(a->n!=2){er("rank");R 0;}A x=a->A[1];
                Y(*f->C){Q'-':R pen1(*f->C,x);
@@ -228,7 +231,7 @@ S A eval(A x,A*l,A*g){
   J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1],l,g));R eval(xA[xn-1],l,g);}
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1],l,g);R sqz(z);}
   J(*xA==cv[':'][0]&&xn==3){A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,z);R z;}}//assignment
-  A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y);
+  A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y,l,g);
 }
 
 //output
