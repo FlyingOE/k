@@ -21,12 +21,6 @@ typedef struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:
 #define B break
 #define D default
 #define E else
-#define F(n) for(L _n=(n),i=0;i<_n;i++)
-#define FA(x,b) {Y((x)->t){Q 0:     F((x)->n){A u=(x)->A[i];b;}B;\
-                           Q 6:Q 11:F((x)->n){A u=ma(-(x)->t,1);*(u)->L=(x)->L[i];b;mf(u);}B;\
-                           Q 10:    F((x)->n){A u=cc[(x)->C[i]];b;}B;\
-                           D:en();}}
-#define FS(s) for(C c,*_p=s;(c=*_p);_p++)
 #define J if
 #define Q case
 #define R return
@@ -55,6 +49,12 @@ S L abs(L x){R x>0?x:-x;}
 S L len(C*x){C*p=x;W(*x)x++;R x-p;}
 S C hex(L x){      R x+(x> 9 ?'a'-10:'0');}
 S L unh(C x){x|=32;R x-(x>'9'?'a'-10:'0');}
+#define F(n) for(L _n=(n),i=0;i<_n;i++)
+#define FC(x) for(C c,*_p=(x);(c=*_p);_p++)
+#define FA(x,b) {Y((x)->t){Q 0:     F((x)->n){A a=(x)->A[i];b;}B;\
+                           Q 6:Q 11:F((x)->n){A a=ma(-(x)->t,1);*(a)->L=(x)->L[i];b;mf(a);}B;\
+                           Q 10:    F((x)->n){A a=cc[(x)->C[i]];b;}B;\
+                           D:en();}}
 S V ps(C*x){write(2,x,len(x));} //for debugging
 S V ph(L x){C s[17];s[16]=0;F(16){s[15-i]=hex(x&15);x>>=4;}write(2,s,17);}
 #define pv(x) pv1(#x":",(L)(x))
@@ -90,8 +90,8 @@ S V ci(){ //init
     x=cd0=ma(99,2);*xA=mh(cy0);xA[1]=mh(ca0); //(0#`)!()
   F(256){x=cc[i]=ma(-10,1);*xC=i;} //chars
   ms(cv,0,Z(cv));
-  F(2)FS("!#$%&*+,<=>?@^_|~:.-"){x=cv[c][i]=ma(107-i,2-i);*xC=c;} //verbs
-  F(2)FS("'\\/"                ){x=cv[c][i]=ma(108  ,  1);*xC=c;} //adverbs
+  F(2)FC("!#$%&*+,<=>?@^_|~:.-"){x=cv[c][i]=ma(107-i,2-i);*xC=c;} //verbs
+  F(2)FC("'\\/"                ){x=cv[c][i]=ma(108  ,  1);*xC=c;} //adverbs
 }
 
 //basic array operations
@@ -182,10 +182,10 @@ S A pen2(C f,A x,A y){
   L n=max(xn,yn);J(xt>=0&&yt>=0&&xn!=yn){el();R 0;}
   J(!xt||!yt){
     A z=ma(0,n);
-    J  (xt<0)FA(y,{zA[i]=pen2(f,x    ,u);})
-    E J(xt>0)FA(y,{zA[i]=pen2(f,xA[i],u);})
-    E J(yt<0)FA(x,{zA[i]=pen2(f,u,y    );})
-    E        FA(x,{zA[i]=pen2(f,u,yA[i]);})
+    J  (xt<0)FA(y,{zA[i]=pen2(f,x    ,a);})
+    E J(xt>0)FA(y,{zA[i]=pen2(f,xA[i],a);})
+    E J(yt<0)FA(x,{zA[i]=pen2(f,a,y    );})
+    E        FA(x,{zA[i]=pen2(f,a,yA[i]);})
     R sqz(z);
   }E J(abs(xt)==6&&abs(yt)==6){
     A z=ma(max(xt,yt),n);J(xt>0&&yt>0&&xn!=yn){el();R 0;}L*p=xL,*q=yL,*r=zL,*r1=r+n,dp=xt>0,dq=yt>0;
@@ -199,7 +199,7 @@ S A apply(A a){
   A f=*a->A;L ft=f->t;
   Y(ft){Q 105:{A x=a->A[1];
                Y(f->A[0]->C[0]){
-                 Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(ff,z,u);A r=apply(h);mf(z);z=r;mf(h);}E{z=mh(u);}});R z;}}
+                 Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(ff,z,a);A r=apply(h);mf(z);z=r;mf(h);}E{z=mh(a);}});R z;}}
                B;}
         Q 106:{J(a->n!=2){er("rank");R 0;}A x=a->A[1];
                Y(*f->C){Q'-':R pen1(*f->C,x);
