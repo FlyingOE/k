@@ -115,7 +115,7 @@ S A dget(A d,L k){A x=d->A[0],y=d->A[1];
                                         D:en();R 0;}
                   R 0;}
 S A dput(A d,L k,A v){A x=d->A[0],y=d->A[1];L i=0,n=xn;W(i<n&&xL[i]!=k)i++;
-                      A z=i<n?a2(x,amend(mh(y),i,v)):a2(addL(x,k),addA(mh(y),v));zt=99;mf(x);R z;}
+                      A z=i<n?a2(x,amend(mh(y),i,v)):a2(addL(x,k),addA(mh(y),v));zt=99;R z;}
 S A ext(A x,L n){J(xt>=0)R x;A z=ma(abs(xt),n);L k=mz(x),l=mz(z);
                  mc(zC,xC,k);W(2*k<l){mc(zC+k,zC,k);k*=2;}mc(zC+k,zC,l-k);R z;}
 
@@ -199,7 +199,7 @@ S A eval(A,A*,A*);
 S V out(A);
 S A apply(A a,A*l,A*g){
   A f=*a->A;L ft=f->t;
-  Y(ft){Q 102:{A d=mh(cd0);F(f->n-2)mf(eval(f->A[i+1],&d,g));A z=eval(f->A[f->n-1],&d,g);mf(d);R z;}
+  Y(ft){Q 102:{A d=mh(cd0);F(f->n-1){mf(eval(f->A[i],&d,g));}A z=eval(f->A[f->n-1],&d,g);mf(d);R z;}
         Q 105:{A x=a->A[1];
                Y(f->A[0]->C[0]){
                  Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(ff,z,a);A r=apply(h,l,g);mf(z);z=r;mf(h);}E{z=mh(a);}});R z;}}
@@ -230,7 +230,8 @@ S A eval(A x,A*l,A*g){
   J(xt||!xn)R mh(x);
   J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1],l,g));R eval(xA[xn-1],l,g);}
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1],l,g);R sqz(z);}
-  J(*xA==cv[':'][0]&&xn==3){A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,z);R z;}}//assignment
+  J(*xA==cv[':'][0]&&xn==3){
+    A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,z);R z;}}//assignment
   A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y,l,g);
 }
 
@@ -251,6 +252,7 @@ S V oA(A x){ //output array
           B;}
     Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
     Q 99:J(xA[0]->n>1){oA(*xA);oC('!');oA(xA[1]);}E{oC('(');oA(*xA);oS(")!",2);oA(xA[1]);}B;
+    Q 102:oC('{');F(xn){J(i)oC(';');oA(xA[i]);}oC('}');B;
     Q 103:oA(*xA);oC('[');oA(xA[1]);oC(']');B;
     Q 104:oA(*xA);oA(xA[1]);B;
     Q 105:oA(xA[1]);oA(*xA);B;
@@ -271,13 +273,13 @@ S V exec(C*x,A*l,A*g){
 }
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
 V go(I ac,C**av){
-  mi();ci();A l=mh(cd0),g=mh(cd0);
+  mi();ci();A l=mh(cd0);
   J(av[1]){ //file.k
     I f=open(av[1],0,0);J(f<0)er("open");L h[18];L r=fstat(f,h);J(r)er("fstat");L n=h[6];J(!n)er("empty");
     C*s=(C*)mmap(0,n,3,0x4002,f,0);J(s==(V*)-1)er("mmap");r=close(f);J(r)er("close");J(s[n-1]!='\n')er("eof");
-    s[n-1]=0;exec(s,&l,&g);r=munmap(s,n);J(r)er("munmap");
+    s[n-1]=0;exec(s,&l,&l);r=munmap(s,n);J(r)er("munmap");
   }
   C b[256];I nb=0,k; //repl:
-  W((k=read(0,b,256-nb))>0){C*p=b,*q=b+nb,*r=q+k;W(q<r){J(*q=='\n'){*q=0;exec(p,&l,&g);p=q+1;}q++;}mc(b,p,nb=q-p);}
+  W((k=read(0,b,256-nb))>0){C*p=b,*q=b+nb,*r=q+k;W(q<r){J(*q=='\n'){*q=0;exec(p,&l,&l);p=q+1;}q++;}mc(b,p,nb=q-p);}
   exit(0);
 }
