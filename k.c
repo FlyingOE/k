@@ -137,10 +137,8 @@ S A mon(A x){J(xt!=107)R x;C c=*xC;mf(x);R mh(cv[c][1]);} //monadic version of v
 S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(2,p,q-p);C b[256];*b='\n'; //parse error
             L k=min(s-p,Z(b));F(k)b[i+1]='_';b[k+1]='^';b[k+2]='\n';write(2,b,k+3);er("parse");}
 S A prs(C l){ //parse
-  W(*s==' ')s++;J(*s=='/')W(*s&&*s!='\n')s++;J(!*s||*s==')'||*s==']'||*s=='}')R mh(ca0);A z=a1(cc[l]);
-  W(1){
-    A t[64];L n=0,g=0; //t:sequence of nouns/verbs, n:how many, g:bitset of grammatical categories (0=noun,1=verb)
-    W(1){
+  A z=a1(cc[l]);W(1){ //z:result of parsing expression in () [] {} or at top level
+    A y=0,t[64];L n=0,g=0;W(1){ //t:sequence of nouns/verbs, n:count, g:bitset of grammatical categories (0=noun,1=verb)
       A x=0;L gx=0;ep(0x80&*s);W(*s==' '){s++;J(*s=='/')W(*s&&*s!='\n')s++;}C c=*s;
       J(!c)B; //eof?
       E J(ltr(c)){x=ma(-11,1);L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}*xL=v;}
@@ -153,7 +151,9 @@ S A prs(C l){ //parse
                                  x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
                   J(xn==1)xt=-xt;}
       E J(c<127&&cv[c][0]){I u=s[1]==':';x=mh(cv[c][u]);s+=1+u;gx=1;}
-      E J(c=='('||c=='['||c=='{'){s++;x=prs(s[-1]);ep(*s!=')'&&*s!=']'&&*s!='}');s++;J(xn==2){A y=x;x=mh(xA[1]);mf(y);}}
+      E J(c=='('&&s[1]==')'){s+=2;x=mh(ca0);}
+      E J(c=='('||c=='['||c=='{'){s++;x=prs(s[-1]);ep(*s!=')'&&*s!=']'&&*s!='}');s++;
+                                  J(xn==2&&c=='('){A y=x;x=mh(xA[1]);mf(y);}}
       E J(c!=')'&&c!=']'&&c!='}'&&c!=';'&&c!='\n'&&c){ep(1);R 0;}
       J(!x)B;
       C m=1;W(m)Y(*s){Q'\\':Q'/':Q'\'':{C c=*s++,u=*s==':';s+=u;x=a2(cv[c][u],x);gx=1;B;}
@@ -161,14 +161,15 @@ S A prs(C l){ //parse
                       D:m=0;B;}
       t[n++]=x;g=g<<1|gx;
     }
-    A y=0;
     J(!n){y=cv[':'][1];}
     E J(!(g&1)){y=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){y=a3(t[n-1],t[n-2],y);n-=2;g>>=2;}E{y=a2(mon(t[--n]),y);g>>=1;}}}
     E J(g&1){W(n){A x;J(n>1&&(g&3)==1){x=a2(t[n-1],t[n-2]);n-=2;g>>=2;xt=103;}E{x=t[--n];}
                       J(y){y=a2(mon(x),y);yt=104;yn=yA[1]->t;}E{y=x;}}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
-  J(l==';'){A y=zA[zn-1];J(!yt&&*yA==cv[':'][0])z=addA(z,cv[':'][1]);J(zn==2){A u=z;z=mh(zA[1]);mf(u);}}R z;
+  J(l!='('&&zn==1){mf(z);z=mh(ca0);}
+  E J(l==';'){A y=zA[zn-1];J(!yt&&*yA==cv[':'][0]){z=addA(z,cv[':'][1]);}J(zn==2){A u=z;z=mh(zA[1]);mf(u);}}
+  R z;
 }
 
 //evaluation
