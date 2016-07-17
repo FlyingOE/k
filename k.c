@@ -1,5 +1,5 @@
 typedef void V;typedef char C;typedef int I;typedef long long L;
-typedef struct SA{L r,t,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
+typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
 #define xr (x->r)
 #define yr (y->r)
 #define zr (z->r)
