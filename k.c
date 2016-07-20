@@ -201,11 +201,13 @@ S V out(A x){J(x!=cv[':'][1]){oA(x);oC('\n');ofl();}}
 //evaluation
 S A pen1(C f,A x){ //penetrate
   J(!xt){A z=ma(0,xn),*p=xA,*r=zA,*r1=r+xn;W(r<r1)*r++=pen1(f,*p++);R z;}
-  J(abs(xt)==6){
-    A z=ma(xt,xn);L*p=xL,*r=zL,*r1=r+xn;
-    #define H(h,e) Q h:W(r<r1){L u=*p;*r++=e;p++;}R z;
-      Y(f){H('-',-u)D:en();R 0;}
-    #undef H
+  Y(abs(xt)){
+    Q 6:{A z=ma(xt,xn);L*p=xL,*r=zL,*r1=r+xn;
+         #define H(h,e) Q h:W(r<r1){L u=*p;*r++=e;p++;}R z;
+           Y(f){H('-',-u)}
+         #undef H
+         B;}
+    Q 10:{A z=ma(xt,xn);F(xn){C c=xC[i];zC[i]='A'<=c&&c<='Z'?c+('a'-'A'):c;};R z;}
   }
   en();R 0;
 }
@@ -235,7 +237,7 @@ S A apply(A a,A*l,A*g){
                  Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(ff,z,a);A r=apply(h,l,g);mf(z);z=r;mf(h);}E{z=mh(a);}});R z;}}
                B;}
         Q 106:{J(a->n!=2){er("rank");R 0;}A x=a->A[1];
-               Y(*f->C){Q'-':R pen1(*f->C,x);
+               Y(*f->C){Q'-':Q'_':R pen1(*f->C,x);
                         Q'#':{A z=ma(-6,1);*zL=xn;R z;}
                         Q'@':{A z=ma(-6,1);*zL=xt;R z;}
                         Q',':J(xt<0){A z=ma(-xt,1);mc(zC,xC,mz(z));R z;}E{R a1(x);}
