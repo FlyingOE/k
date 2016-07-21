@@ -256,6 +256,7 @@ S A apply(A a,A*l,A*g){
         Q 108:{A z=ma(105,2);*zA=f;zA[1]=a->A[1];R z;B;}}
   en();R 0;
 }
+S L truthy(A x){J(!xn||x==cv[':'][1])R 0;Y(abs(xt)){Q 6:Q 11:R!!*xL;Q 10:R!!*xC;D:en();R 0;}}
 S A eval(A x,A*l,A*g){
   J(xt==-11){A z=dget(*l,*xL);J(!z)z=dget(*g,*xL);J(!z){er("value");R 0;};R mh(z);}
   J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
@@ -264,6 +265,8 @@ S A eval(A x,A*l,A*g){
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1],l,g);R sqz(z);}
   J(*xA==cv[':'][0]&&xn==3){
     A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,z);R z;}}//assignment
+  J(*xA==cv['$'][0]&&xn>3){for(L i=2;i<xn;i+=2){A y=eval(xA[i-1],l,g);L r=truthy(y);mf(y);J(r)R mh(xA[i]);}
+                           R mh(xn&1?cv[':'][1]:xA[xn-1]);}
   A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y,l,g);
 }
 
