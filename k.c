@@ -90,8 +90,8 @@ S V ci(){ //init
     x=cd0=ma(99,2);*xA=mh(cy0);xA[1]=mh(ca0); //(0#`)!()
   F(256){x=cc[i]=ma(-10,1);*xC=i;} //chars
   ms(cv,0,Z(cv));
-  F(2)FC("!#$%&*+,<=>?@^_|~:.-"){x=cv[c][i]=ma(107-i,2-i);*xC=c;} //verbs
-  F(2)FC("'\\/"                ){x=cv[c][i]=ma(108  ,  1);*xC=c;} //adverbs
+  F(2)FC("!#$%&*+,<=>?@^_|~:.-0123456789"){x=cv[c][i]=ma(107-i,2-i);*xC=c;} //verbs
+  F(2)FC("'\\/"                          ){x=cv[c][i]=ma(108  ,  1);*xC=c;} //adverbs
   F(3){x=coxyz[i]=ma(11,i+2);*xL='o';for(L j=0;j<=i;j++)xL[j+1]='x'+j;}
 }
 
@@ -144,6 +144,7 @@ S A prs(C l){ //parse
       E J(c=='"'){x=mh(cc0);s++;W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
                   ep(!*s);s++;J(xn==1)xt=-xt;}
       E J(c=='0'&&s[1]=='x'){x=mh(cc0);s+=2;W(hdg(*s)&&hdg(s[1])){x=addC(x,unh(*s)<<4|unh(s[1]));s+=2;}J(xn==1)xt=-xt;}
+      E J('0'<=c&&c<='9'&&s[1]==':'){I u=s[2]==':';s+=2+u;x=mh(cv[c][u]);gx=1;}
       E J(num(s)&&(*s!='-'||s==s0||(!ldg(s[-1])&&s[-1]!=')'))){
                   x=mh(cl0);W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');
                                  x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
@@ -192,7 +193,7 @@ S V oA(A x){ //output array
     Q 103:oA(*xA);oC('[');oA(xA[1]);oC(']');B;
     Q 104:oA(*xA);oA(xA[1]);B;
     Q 105:oA(xA[1]);oA(*xA);B;
-    Q 106:Q 107:Q 108:oC(*xC);J(x==cv[*xC][1])oC(':');B;
+    Q 106:Q 107:Q 108:{C c=*xC;oC(c);J('0'<=c&&c<='9')oC(':');J(x==cv[c][1])oC(':');B;}
     D:oS("???",3);B;
   }
 }
