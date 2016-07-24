@@ -28,6 +28,7 @@ typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:ty
 #define W while
 #define Y switch
 #define Z sizeof
+#define PG 4096 //page size
 
 //syscalls
 #include<syscall.h>
@@ -72,7 +73,7 @@ S V pm(V*x,V*y){ph((L)x);ps(":");C s[3];*s=' ';
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp;                                                              //pointer to free memory
-S V mi(){mp0=mp=(V*)mmap(0,1L<<46,3,0x4022,-1,0);J((L)mp<0)er("mm");}     //init
+S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)er("mm");}     //init
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                            //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                    //memset
 S L mz(A x){R(max(1,xn)*Z(L));}                                           //array size
@@ -246,6 +247,11 @@ S A apply(A a,A*l,A*g){
                       D:en();R 0;}
       Q'!':{J(xt!=-6){en();R 0;}
             L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
+      Q'1':{A x=a->A[1];C s[256];J(xt<0){er("rank");R 0;}J(xt!=10){et();R 0;}J(xn>=Z(s)){el();R 0;}mc(s,xC,xn);s[xn]=0;
+            A z;L fd=open(s,0,0);J(fd<0)er("open");L h[18];L r=fstat(fd,h);J(r)er("fstat");L n=h[6];
+            J(!n){z=mh(cc0);}E{z=(V*)mmap(0,PG+n,3,0x4022,-1,0)+(PG-Z(*z));J((L)z<0){er("mmap");R 0;}
+                               V*u=(V*)mmap(zC,n,3,0x4012,fd,0);J((L)u<0){er("mmapfile");R 0;}}
+            r=close(fd);J(r){er("close");R 0;}zn=n;zt=10;R z;}
       B;}
     Q 107:{J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];Y(*f->C){
       Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
@@ -265,7 +271,7 @@ S A eval(A x,A*l,A*g){
   J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1],l,g));R eval(xA[xn-1],l,g);}
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1],l,g);R sqz(z);}
   J(*xA==cv[':'][0]&&xn==3){
-    A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,z);R z;}}//assignment
+    A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,mh(z));R z;}}//assignment
   J(*xA==cv['$'][0]&&xn>3){for(L i=2;i<xn;i+=2){A y=eval(xA[i-1],l,g);L r=truthy(y);mf(y);J(r)R eval(xA[i],l,g);}
                            R xn&1?mh(cv[':'][1]):eval(xA[xn-1],l,g);}
   A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y,l,g);
