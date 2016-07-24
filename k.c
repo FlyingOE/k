@@ -1,8 +1,5 @@
 typedef void V;typedef char C;typedef int I;typedef long long L;
 typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
-#define xr (x->r)
-#define yr (y->r)
-#define zr (z->r)
 #define xn (x->n)
 #define yn (y->n)
 #define zn (z->n)
@@ -72,14 +69,14 @@ S V pm(V*x,V*y){ph((L)x);ps(":");C s[3];*s=' ';
 #define et() er("type")
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
-S V*mp0,*mp;                                                              //pointer to free memory
-S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)er("mm");}     //init
-S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                            //memcpy
-S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                    //memset
-S L mz(A x){R(max(1,xn)*Z(L));}                                           //array size
-S A ma(C t,L n){A x=mp;xr=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}               //allocate
-S V mf(A x){J(--xr)R;J(!xt)F(max(1,xn))mf(xA[i]);ms(x,0xaa,Z(*x)+mz(x));} //free
-S A mh(A x){xr++;R x;}                                                    //hold (inc refcount)
+S V*mp0,*mp;                                                                //pointer to free memory
+S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)er("mm");}       //init
+S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                              //memcpy
+S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                      //memset
+S L mz(A x){R(max(1,xn)*Z(L));}                                             //array size
+S A ma(C t,L n){A x=mp;x->r=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}               //allocate
+S V mf(A x){J(--x->r)R;J(!xt)F(max(1,xn))mf(xA[i]);ms(x,0xaa,Z(*x)+mz(x));} //free
+S A mh(A x){x->r++;R x;}                                                    //hold (inc refcount)
 
 //constants
 S A ca0,cl0,cc0,cy0,cd0,cc[256],cv[128][2],coxyz[3];
