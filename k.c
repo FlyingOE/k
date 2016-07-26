@@ -267,30 +267,23 @@ S A eval(A x,A*l,A*g){
   J(xt||!xn)R mh(x);
   J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1],l,g));R eval(xA[xn-1],l,g);}
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1],l,g);R sqz(z);}
-  J(*xA==cv[':'][0]&&xn==3){
-    A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,mh(z));R z;}}//assignment
+  J(*xA==cv[':'][0]&&xn==3){A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,mh(z));R z;}} //assignment
   J(*xA==cv['$'][0]&&xn>3){for(L i=2;i<xn;i+=2){A y=eval(xA[i-1],l,g);L r=truthy(y);mf(y);J(r)R eval(xA[i],l,g);}
                            R xn&1?mh(cv[':'][1]):eval(xA[xn-1],l,g);}
   A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y,l,g);
 }
-
-//main
 S V exec(C*x,A*l,A*g){
-  J(*x=='\\')Y(x[1]){
-    Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);R;
-    Q 0:exit(0);
-    D:er("syscmd");R;
-  }
+  J(*x=='\\')Y(x[1]){Q 0:exit(0);R;
+                     Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);R;
+                     D:er("syscmd");R;}
   s=s0=x;A t=prs(';'),r=eval(t,l,g);mf(t);out(r);mf(r);
 }
-asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp go");
-V go(I ac,C**av){
+asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp main");
+V main(I ac,C**av){
   mi();ci();A l=mh(cd0);
-  J(av[1]){ //file.k
-    I f=open(av[1],0,0);J(f<0)er("open");L h[18];L r=fstat(f,h);J(r)er("fstat");L n=h[6];J(!n)er("empty");
-    C*s=(C*)mmap(0,n,3,0x4002,f,0);J(s==(V*)-1)er("mmap");r=close(f);J(r)er("close");J(s[n-1]!='\n')er("eof");
-    s[n-1]=0;exec(s,&l,&l);r=munmap(s,n);J(r)er("munmap");
-  }
+  J(av[1]){I f=open(av[1],0,0);J(f<0)er("open");L h[18];L r=fstat(f,h);J(r)er("fstat");L n=h[6];J(!n)er("empty");
+           C*s=(C*)mmap(0,n,3,0x4002,f,0);J(s==(V*)-1)er("mmap");r=close(f);J(r)er("close");J(s[n-1]!='\n')er("eof");
+           s[n-1]=0;exec(s,&l,&l);r=munmap(s,n);J(r)er("munmap");}
   C b[256];I nb=0,k; //repl:
   W((k=read(0,b,256-nb))>0){C*p=b,*q=b+nb,*r=q+k;W(q<r){J(*q=='\n'){*q=0;exec(p,&l,&l);p=q+1;}q++;}mc(b,p,nb=q-p);}
   exit(0);
