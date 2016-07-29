@@ -1,5 +1,5 @@
 typedef void V;typedef char C;typedef int I;typedef long long L;
-typedef struct SA{L m,t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
+typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
 #define xn (x->n)
 #define yn (y->n)
 #define zn (z->n)
@@ -69,12 +69,14 @@ S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)er("mm");}       //in
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                              //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                      //memset
 S L mz(A x){R(max(1,xn)*Z(L));}                                             //array size
-S A ma(C t,L n){A x=mp;x->r=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}    //allocate
-S V mf(A x){J(--x->r)R;J(!xt||xt==99)F(max(1,xn))                           //free
+S A ma(C t,L n){A x=mp;x->r=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}               //allocate
+S V mf(A x){J(--x->r)R;J(!xt||(xt>=99&&xt<=106))F(max(1,xn))                //free
             mf(xA[i]);ms(xC,0xaa,mz(x));xt+=50;}
 S A mh(A x){x->r++;R x;}                                                    //hold (inc refcount)
-S V pm(){for(V*p=mp1;p<mp;p+=Z(struct SA)+mz((A)p)){A y=p;J(y->r){ph((L)y);ps(" r");pd(y->r);
-                                                    ps("t");pd(yt);ps("n");pd(yn);ps("\n");}}}
+
+S V pm(){for(V*p=mp1;p<mp;p+=Z(struct SA)+mz((A)p)){
+  A y=p;J(y->r){ph((L)y);ps(" r");pd(y->r);ps("t");pd(yt);ps("n");pd(yn);ps(" ");ph(*yL);ps("\n");}
+}}
 
 //constants
 S A ca0,cl0,cc0,cy0,cd0,cc[256],cv[128][2],coxyz[3];
@@ -98,13 +100,13 @@ S A a2(A x,A y    ){A r=ma(0,2);*r->A=x;r->A[1]=y;          R r;} //pair
 S A a3(A x,A y,A z){A r=ma(0,3);*r->A=x;r->A[1]=y;r->A[2]=z;R r;} //triplet
 S A addC(A x,C y){A z=ma(xt,xn+1);mc(zC,xC,mz(x));zC[xn]=y;mf(x);R z;}
 S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
-S A addA(A x,A y){A z=ma(xt,xn+1);mc(zA,xA,mz(x));zA[xn]=y;F(zn)mh(zA[i]);mf(x);R z;}
-S A sqz(A x){J(xt)R x;L t=xA[0]->t;J(t>=0)R x;F(xn)J(t!=xA[i]->t)R x;A z=ma(-t,xn);
-             Y(t){Q-6:Q-11:F(xn)zL[i]=*xA[i]->L;R z;
-                  Q-10:    F(xn)zC[i]=*xA[i]->C;R z;
-                  D:en();R 0;}}
-S A amend(A x,L i,A v){Y(xt){Q 0:J(x->r<2){mf(xA[i]);xA[i]=mh(v);R x;}
-                                 E{A z=ma(xt,xn);mc(zA,xA,mz(x));zA[i]=v;F(zn)mh(zA[i]);mf(x);R z;}
+S A addA(A x,A y){A z=ma(xt,xn+1);mc(zA,xA,mz(x));zA[xn]=y;F(zn-1)mh(zA[i]);mf(x);R z;}
+S A sqz(A x){J(xt)R x;L t=xA[0]->t;J(t>=0)R x;F(xn)J(t!=xA[i]->t)R x;
+             A z=ma(-t,xn);Y(t){Q-6:Q-11:F(xn)zL[i]=*xA[i]->L;mf(x);R z;
+                                Q-10:    F(xn)zC[i]=*xA[i]->C;mf(x);R z;
+                                D:en();R 0;}}
+S A amend(A x,L j,A v){Y(xt){Q 0:J(x->r<2){mf(xA[j]);xA[j]=v;R x;}
+                                 E{A z=ma(xt,xn);mc(zA,xA,mz(x));zA[j]=v;F(zn)J(i!=j)mh(zA[i]);mf(x);R z;}
                              D:en();R 0;}}
 S A dget(A d,L k){A x=d->A[0],y=d->A[1];
                   F(xn)J(xL[i]==k)Y(yt){Q 0:R mh(yA[i]);
@@ -112,8 +114,8 @@ S A dget(A d,L k){A x=d->A[0],y=d->A[1];
                                         Q 10:    {A z=ma(-yt,1);*zC=yC[i];R z;}
                                         D:en();R 0;}
                   R 0;}
-S A dput(A d,L k,A v){A x=d->A[0],y=d->A[1];L i=0,n=xn;W(i<n&&xL[i]!=k)i++;
-                      A z=i<n?a2(mh(x),mh(amend(mh(y),i,v))):a2(mh(addL(x,k)),mh(addA(mh(y),v)));zt=99;R z;}
+S A dput(A d,L k,A v){A x=mh(d->A[0]),y=mh(d->A[1]);L i=0,n=xn;W(i<n&&xL[i]!=k)i++;
+                      A z=i<n?a2(x,amend(y,i,v)):a2(addL(x,k),addA(y,v));zt=99;mf(d);R z;}
 S A ext(A x,L n){J(xt>=0)R x;A z=ma(abs(xt),n);L k=mz(x),l=mz(z);
                  mc(zC,xC,k);W(2*k<l){mc(zC+k,zC,k);k*=2;}mc(zC+k,zC,l-k);R z;}
 
@@ -160,8 +162,8 @@ S A prs(C l){ //parse
     }
     J(!n){y=mh(cv[':'][1]);}
     E J(!(g&1)){y=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){y=a3(t[n-1],t[n-2],y);n-=2;g>>=2;}E{y=a2(mon(t[--n]),y);g>>=1;}}}
-    E J(g&1){W(n){A x;J(n>1&&(g&3)==1){x=a2(t[n-1],t[n-2]);n-=2;g>>=2;xt=103;}E{x=t[--n];}
-                      J(y){y=a2(mon(x),y);yt=104;yn=yA[1]->t;}E{y=x;}}}
+    E{W(n){A x;J(n>1&&(g&3)==1){x=a2(t[n-1],t[n-2]);xt=103;n-=2;g>>=2;}E{x=t[--n];}
+               J(y){y=a2(mon(x),mh(y));yt=104;}E{y=x;}}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
   J(l!='('&&zn==1){mf(z);z=mh(ca0);}
@@ -252,24 +254,23 @@ S A apply(A a,A*l,A*g){
     Q 107:{J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];Y(*f->C){
       Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
       Q'!':{J(abs(xt)!=11){et();R 0;}J(xt>=0&&yt>=0&&xn!=yn){el();R 0;}
-            J(xt<0){x=ext(x,1);y=a1(mh(y));}E{mh(x);y=ext(y,xn);}
-            A z=a2(mh(x),mh(y));mf(x);mf(y);zt=99;R z;}}
+            mh(x);mh(y);J(xt<0){x=ext(x,1);y=a1(y);}E{y=ext(y,xn);} A z=a2(x,y);zt=99;R z;}}
       B;}
-    Q 108:{A z=ma(105,2);*zA=f;zA[1]=a->A[1];R z;}
+    Q 108:{A z=a2(mh(f),mh(a->A[1]));zt=105;R z;}
     B;}
   en();R 0;
 }
 S L truthy(A x){J(!xn||x==cv[':'][1])R 0;Y(abs(xt)){Q 6:Q 11:R!!*xL;Q 10:R!!*xC;D:en();R 0;}}
 S A eval(A x,A*l,A*g){
-  J(xt==-11){A z=dget(*l,*xL);J(!z)z=dget(*g,*xL);J(!z){er("value");R 0;};R mh(z);}
+  J(xt==-11){A z=dget(*l,*xL);J(!z)z=dget(*g,*xL);J(!z){er("value");R 0;};R z;}
   J(xt==11&&xn==1){A z=ma(-11,1);*zL=*xL;R z;}
   J(xt||!xn)R mh(x);
   J(*xA==cc[';']){F(xn-2)mf(eval(xA[i+1],l,g));R eval(xA[xn-1],l,g);}
   J(*xA==cc['(']){A z=ma(0,xn-1);F(xn-1)zA[i]=eval(xA[i+1],l,g);R sqz(z);}
-  J(*xA==cv[':'][0]&&xn==3){A y=mh(xA[1]);J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,mh(z));R z;}} //assignment
+  J(*xA==cv[':'][0]&&xn==3){A y=xA[1];J(yt==-11){A z=eval(xA[2],l,g);*l=dput(*l,*yL,mh(z));R z;}} //assignment
   J(*xA==cv['$'][0]&&xn>3){for(L i=2;i<xn;i+=2){A y=eval(xA[i-1],l,g);L r=truthy(y);mf(y);J(r)R eval(xA[i],l,g);}
                            R xn&1?mh(cv[':'][1]):eval(xA[xn-1],l,g);}
-  A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);R apply(y,l,g);
+  A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);A z=apply(y,l,g);mf(y);R z;
 }
 S V exec(C*x,A*l,A*g){
   J(*x=='\\'){Y(x[1]){Q 0:exit(0);B;
