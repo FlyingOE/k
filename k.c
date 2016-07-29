@@ -188,7 +188,7 @@ S V oA(A x){ //output array
           B;}
     Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
     Q 99:J(xA[0]->n>1){oA(*xA);oC('!');oA(xA[1]);}E{oC('(');oA(*xA);oS(")!",2);oA(xA[1]);}B;
-    Q 102:oC('{');F(xn){J(i)oC(';');oA(xA[i]);}oC('}');B;
+    Q 102:oS(xA[2]->C,xA[2]->n);B;
     Q 103:oA(*xA);oC('[');oA(xA[1]);oC(']');B;
     Q 104:oA(*xA);oA(xA[1]);B;
     Q 105:oA(xA[1]);oA(*xA);B;
