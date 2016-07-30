@@ -233,8 +233,8 @@ S A apply(A a,A*l,A*g){
   A f=*a->A;Y(f->t){
     Q 102:{A x=*f->A;J(xn!=a->n)er("rank");A d=a2(mh(x),mh(a));d->t=99;A z=eval(f->A[1],&d,g);mf(d);R z;}
     Q 105:{A x=a->A[1];Y(f->A[0]->C[0]){
-      Q'/':{A z=0,ff=f->A[1];FA(x,{J(z){A h=a3(mh(ff),z,mh(a));A r=apply(h,l,g);mf(z);z=r;mf(h);}E{z=mh(a);}});R z;}}
-      B;}
+      Q'/':{A z=0,u=f->A[1];FA(x,{J(z){A h=a3(mh(u),mh(z),mh(a));A r=apply(h,l,g);mf(z);z=r;mf(h);}E{z=mh(a);}});R z;}
+      B;}}
     Q 106:{J(a->n!=2){er("rank");R 0;}A x=a->A[1];Y(*f->C){
       Q'-':Q'_':R pen1(*f->C,x);
       Q'#':{A z=ma(-6,1);*zL=xn;R z;}
