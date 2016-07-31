@@ -25,7 +25,7 @@ typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:ty
 #define W while
 #define Y switch
 #define Z sizeof
-#define PG 4096 //page size
+#define PG 0x1000 //page size
 
 //syscalls
 #include<syscall.h>
@@ -54,8 +54,8 @@ S L unh(C x){x|=32;R x-(x>'9'?'a'-10:'0');}
 S V ps(C*x){write(2,x,len(x));} //for debugging
 S V ph(L x){C s[17];s[16]=0;F(16){s[15-i]=hex(x&15);x>>=4;}write(2,s,17);}
 S V pd(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';write(2,u+1,b+31-u);}
-#define pv(x) pv1(#x":",(L)(x))
-S L pv1(C*s,L x){write(2,s,len(s));ph((L)x);write(2,"\n",1);R x;}
+#define pv(x) pv1(#x,(L)(x))
+S L pv1(C*s,L x){write(2,s,len(s));write(2,"           ",max(1,10-len(s)));ph((L)x);write(2,"\n",1);R x;}
 
 //error handling
 #define er(m){write(1,"'"m"\n",2+Z(m));exit(1);}
@@ -68,7 +68,7 @@ S V*mp0,*mp1,*mp; //mp0:start of heap, mp1:end of constants, mp:end of heap
 S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)er("mm");}       //init
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                              //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                      //memset
-S L mz(A x){R(max(1,xn)*Z(L));}                                             //array size
+S L mz(A x){R max(1,xn)*(xt==10?Z(C):Z(L));}                                //array size
 S A ma(C t,L n){A x=mp;x->r=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}               //allocate
 S V mf(A x){J(--x->r)R;J(!xt||(xt>=99&&xt<=106))F(max(1,xn))                //free
             mf(xA[i]);ms(xC,0xaa,mz(x));xt+=50;}
@@ -88,8 +88,8 @@ S V ci(){ //init
     x=cd0=ma(99,2);*xA=mh(cy0);xA[1]=mh(ca0); //(0#`)!()
   F(256){x=cc[i]=ma(-10,1);*xC=i;} //chars
   ms(cv,0,Z(cv));
-  F(2)FC("!#$%&*+,<=>?@^_|~:.-0123456789"){x=cv[c][i]=ma(107-i,2-i);*xC=c;} //verbs
-  F(2)FC("'\\/"                          ){x=cv[c][i]=ma(108  ,  1);*xC=c;} //adverbs
+  F(2)FC("!#$%&*+,<=>?@^_|~:.-0123456789"){x=cv[c][i]=ma(107-i,1);*xC=c;} //verbs
+  F(2)FC("'\\/"                          ){x=cv[c][i]=ma(108  ,1);*xC=c;} //adverbs
   F(3){x=coxyz[i]=ma(11,i+2);*xL='o';for(L j=0;j<=i;j++)xL[j+1]='x'+j;}
   mp1=mp;
 }
@@ -247,9 +247,10 @@ S A apply(A a,A*l,A*g){
             L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
       Q'1':{A x=a->A[1];C s[256];J(xt<0){er("rank");R 0;}J(xt!=10){et();R 0;}J(xn>=Z(s)){el();R 0;}mc(s,xC,xn);s[xn]=0;
             A z;L fd=open(s,0,0);J(fd<0)er("open");L h[18];L r=fstat(fd,h);J(r)er("fstat");L n=h[6];
-            J(!n){z=mh(cc0);}E{z=(V*)mmap(0,PG+n,3,0x4022,-1,0)+(PG-Z(*z));J((L)z<0){er("mmap");R 0;}
-                               V*u=(V*)mmap(zC,n,3,0x4012,fd,0);J((L)u<0){er("mmapfile");R 0;}}
-            r=close(fd);J(r){er("close");R 0;}zn=n;zt=10;R z;}
+            J(!n){z=mh(cc0);}E{V*z0=(V*)mmap(0,PG+n,3,0x4022,-1,0);J((L)z0<0){er("mmap");R 0;}z=z0+(PG-Z(*z));
+                               V*u=(V*)mmap(zC,n,3,0x4012,fd,0);J((L)u<0){er("mmapfile");R 0;}
+                               zn=n;zt=10;z->r=1;}
+            r=close(fd);J(r){er("close");R 0;}R z;}
       B;}
     Q 107:{J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];Y(*f->C){
       Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
@@ -273,11 +274,11 @@ S A eval(A x,A*l,A*g){
   A y=ma(0,xn);F(xn)yA[i]=eval(xA[i],l,g);A z=apply(y,l,g);mf(y);R z;
 }
 S V exec(C*x,A*l,A*g){
-  J(*x=='\\'){Y(x[1]){Q 0:exit(0);B;
-                      Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);B;
-                      Q'm':pm();B;
-                      D:er("syscmd");B;}}
-  E{s=s0=x;A t=prs(';'),r=eval(t,l,g);mf(t);out(r);mf(r);}
+  J(*x!='\\'){s=s0=x;A t=prs(';'),r=eval(t,l,g);mf(t);out(r);mf(r);R;}
+  Y(x[1]){Q 0:exit(0);B;
+          Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);B;
+          Q'm':pm();B;
+          D:er("syscmd");B;}
 }
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp main");
 V main(I ac,C**av){
