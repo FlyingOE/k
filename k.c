@@ -62,6 +62,7 @@ S L pv1(C*s,L x){write(2,s,len(s));write(2,"           ",max(1,10-len(s)));ph((L
 #define en() er("nyi")
 #define el() er("length")
 #define et() er("type")
+#define ed() er("domain")
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp1,*mp; //mp0:start of heap, mp1:end of constants, mp:end of heap
@@ -254,9 +255,14 @@ S A apply(A a,A*l,A*g){
       B;}
     Q 107:{J(a->n!=3){er("rank");R 0;}A x=a->A[1],y=a->A[2];Y(*f->C){
       Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
-      Q'!':{J(abs(xt)!=11){et();R 0;}J(xt>=0&&yt>=0&&xn!=yn){el();R 0;}
-            mh(x);mh(y);J(xt<0){x=ext(x,1);y=a1(y);}E{y=ext(y,xn);} A z=a2(x,y);zt=99;R z;}}
-      B;}
+      Q'!':Y(xt){
+        Q 11:Q-11:{J(xt>=0&&yt>=0&&xn!=yn){el();R 0;}
+                   mh(x);mh(y);J(xt<0){x=ext(x,1);y=a1(y);}E{y=ext(y,xn);} A z=a2(x,y);zt=99;R z;}
+        Q-6:Y(*xL){
+          Q-16:{A z=ma(-6,1);*zL=y->r;R z;}
+          D:ed();R 0;}
+        D:et();R 0;}
+      B;}}
     Q 108:{A z=a2(mh(f),mh(a->A[1]));zt=105;R z;}
     B;}
   en();R 0;
