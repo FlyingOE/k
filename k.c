@@ -1,4 +1,4 @@
-typedef void V;typedef char C;typedef int I;typedef long long L;
+typedef void V;typedef char C;typedef int I;typedef long long L;typedef double D;
 typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
 #define xn (x->n)
 #define yn (y->n)
@@ -9,6 +9,9 @@ typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:ty
 #define xL (x->L)
 #define yL (y->L)
 #define zL (z->L)
+#define xD (x->D)
+#define yD (y->D)
+#define zD (z->D)
 #define xA (x->A)
 #define yA (y->A)
 #define zA (z->A)
@@ -16,12 +19,12 @@ typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:ty
 #define yC (y->C)
 #define zC (z->C)
 #define B break
-#define D default
 #define E else
 #define J if
 #define Q case
 #define R return
 #define S static
+#define U default
 #define W while
 #define Y switch
 #define Z sizeof
@@ -50,7 +53,7 @@ S L unh(C x){x|=32;R x-(x>'9'?'a'-10:'0');}
 #define FA(x,b) {Y((x)->t){Q 0:     F((x)->n){A a=(x)->A[i];b;}B;\
                            Q 6:Q 11:F((x)->n){A a=ma(-(x)->t,1);*(a)->L=(x)->L[i];b;mf(a);}B;\
                            Q 10:    F((x)->n){A a=cc[(x)->C[i]];b;}B;\
-                           D:en();}}
+                           U:en();}}
 S V ps(C*x){write(2,x,len(x));} //for debugging
 S V ph(L x){C s[17];s[16]=0;F(16){s[15-i]=hex(x&15);x>>=4;}write(2,s,17);}
 S V pd(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';write(2,u+1,b+31-u);}
@@ -106,15 +109,15 @@ S A addA(A x,A y){A z=ma(xt,xn+1);mc(zA,xA,mz(x));zA[xn]=y;F(zn-1)mh(zA[i]);mf(x
 S A sqz(A x){J(xt)R x;L t=xA[0]->t;J(t>=0)R x;F(xn)J(t!=xA[i]->t)R x;
              A z=ma(-t,xn);Y(t){Q-6:Q-11:F(xn)zL[i]=*xA[i]->L;mf(x);R z;
                                 Q-10:    F(xn)zC[i]=*xA[i]->C;mf(x);R z;
-                                D:en();R 0;}}
+                                U:en();R 0;}}
 S A amend(A x,L j,A v){Y(xt){Q 0:J(x->r<2){mf(xA[j]);xA[j]=v;R x;}
                                  E{A z=ma(xt,xn);mc(zA,xA,mz(x));zA[j]=v;F(zn)J(i!=j)mh(zA[i]);mf(x);R z;}
-                             D:en();R 0;}}
+                             U:en();R 0;}}
 S A dget(A d,L k){A x=d->A[0],y=d->A[1];
                   F(xn)J(xL[i]==k)Y(yt){Q 0:R mh(yA[i]);
                                         Q 6:Q 11:{A z=ma(-yt,1);*zL=yL[i];R z;}
                                         Q 10:    {A z=ma(-yt,1);*zC=yC[i];R z;}
-                                        D:en();}
+                                        U:en();}
                   R 0;}
 S A dput(A d,L k,A v){A x=mh(d->A[0]),y=mh(d->A[1]);L i=0,n=xn;W(i<n&&xL[i]!=k)i++;
                       A z=i<n?a2(x,amend(y,i,v)):a2(addL(x,k),addA(y,v));zt=99;mf(d);R z;}
@@ -128,8 +131,8 @@ S L dgt(C x){R'0'<=x&&x<='9';}                  //digit?
 S L ldg(C x){R ltr(x)||dgt(x);}                 //alphanumeric?
 S L hdg(C x){x|=32;R dgt(x)||('a'<=x&&x<='f');} //hex digit?
 S L num(C*x){R dgt(*x)||(*x=='.'&&dgt(x[1]))||((*x=='-'&&(dgt(x[1])))||(x[1]=='.'&&dgt(x[2])));} //is number start?
-S C esc(C x){Y(x){Q'\0':R'0';Q'\n':R'n';Q'\r':R'r';Q'\t':R't';Q'"':R'"';D:R 0;}}
-S C une(C x){Y(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';D:R x;}}
+S C esc(C x){Y(x){Q'\0':R'0';Q'\n':R'n';Q'\r':R'r';Q'\t':R't';Q'"':R'"';U:R 0;}}
+S C une(C x){Y(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';U:R x;}}
 S A mon(A x){J(xt!=107)R x;C c=*xC;mf(x);R mh(cv[c][1]);} //monadic version of verb, eg + -> +:
 S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(1,p,q-p);C b[256];*b='\n'; //parse error
             L k=min(s-p,Z(b));F(k)b[i+1]='_';b[k+1]='^';b[k+2]='\n';write(1,b,k+3);e("parse");}
@@ -159,7 +162,7 @@ S A prs(C l){ //parse
       J(!x)B;
       C m=1;W(m)Y(*s){Q'\\':Q'/':Q'\'':{C c=*s++,u=*s==':';s+=u;x=a2(mh(cv[c][u]),x);gx=1;B;}
                       Q'[':{s++;A u=x;x=prs('[');*xA=u;ep(*s!=']');s++;gx=0;B;}
-                      D:m=0;B;}
+                      U:m=0;B;}
       t[n++]=x;g=g<<1|gx;
     }
     J(!n){y=mh(cv[':'][1]);}
@@ -195,7 +198,7 @@ S V oA(A x){ //output array
     Q 104:oA(*xA);oA(xA[1]);B;
     Q 105:oA(xA[1]);oA(*xA);B;
     Q 106:Q 107:Q 108:{C c=*xC;oC(c);J('0'<=c&&c<='9')oC(':');J(x==cv[c][1])oC(':');B;}
-    D:oS("???",3);B;
+    U:oS("???",3);B;
   }
 }
 S V out(A x){J(x!=cv[':'][1]){oA(x);oC('\n');ofl();}}
@@ -225,7 +228,7 @@ S A pen2(C f,A x,A y){
   }E J(abs(xt)==6&&abs(yt)==6){
     A z=ma(max(xt,yt),n);J(xt>0&&yt>0&&xn!=yn)el();L*p=xL,*q=yL,*r=zL,*r1=r+n,dp=xt>0,dq=yt>0;
     #define H(h,w) Q h:W(r<r1){L u=*p,v=*q;*r++=w;p+=dp;q+=dq;}R z;
-    Y(f){H('+',u+v)H('-',u-v)H('*',u*v)H('%',u/v)H('&',min(u,v))H('|',max(u,v))H('=',u==v)H('<',u<v)H('>',u>v)D:en();}
+    Y(f){H('+',u+v)H('-',u-v)H('*',u*v)H('%',u/v)H('&',min(u,v))H('|',max(u,v))H('=',u==v)H('<',u<v)H('>',u>v)U:en();}
     #undef H
   }
   en();R 0;
@@ -247,7 +250,7 @@ S A apply(A*a,I na,A*l,A*g){
       Q',':J(xt<0){A z=ma(-xt,1);mc(zC,xC,mz(z));R z;}E{R a1(mh(x));}
       Q'*':Y(abs(xt)){Q 0:R mh(*xA);
                       Q 6:Q 10:Q 11:{A z=ma(-abs(xt),1);xt==10?(*zC=*xC):(*zL=*xL);R z;}
-                      D:en();}
+                      U:en();}
       Q'!':{J(xt!=-6)en();
             L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
       Q'1':{C s[256];J(xt<0)er();J(xt!=10)et();J(xn>=Z(s))el();mc(s,xC,xn);s[xn]=0;
@@ -264,14 +267,14 @@ S A apply(A*a,I na,A*l,A*g){
                    mh(x);mh(y);J(xt<0){x=ext(x,1);y=a1(y);}E{y=ext(y,xn);} A z=a2(x,y);zt=99;R z;}
         Q-6:Y(*xL){
           Q-16:{A z=ma(-6,1);*zL=y->r;R z;}
-          D:ed();}
-        D:et();}
+          U:ed();}
+        U:et();}
       B;}}
     Q 108:{A z=a2(mh(f),mh(x));zt=105;R z;}
     B;}
   en();R 0;
 }
-S L truthy(A x){J(!xn||x==cv[':'][1])R 0;Y(abs(xt)){Q 6:Q 11:R!!*xL;Q 10:R!!*xC;D:en();R 0;}}
+S L truthy(A x){J(!xn||x==cv[':'][1])R 0;Y(abs(xt)){Q 6:Q 11:R!!*xL;Q 10:R!!*xC;U:en();R 0;}}
 S A eval(A x,A*l,A*g){L n=xn,t=xt;
   J(t==-11){A z=dget(*l,*xL);J(!z)z=dget(*g,*xL);J(!z)e("value");R z;}
   J(t==11&&n==1){A z=ma(-11,1);*zL=*xL;R z;}
@@ -288,7 +291,7 @@ S V exec(C*x,A*l,A*g){
   Y(x[1]){Q 0:exit(0);B;
           Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);B;
           Q'm':pm();B;
-          D:e("syscmd");B;}
+          U:e("syscmd");B;}
 }
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp main");
 V main(I ac,C**av){
