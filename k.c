@@ -70,7 +70,7 @@ S L pv1(C*s,L x){write(2,s,len(s));write(2,"           ",max(1,10-len(s)));ph((L
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp1,*mp; //mp0:start of heap, mp1:end of constants, mp:end of heap
-S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)e("mm");}       //init
+S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)e("mm");}        //init
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                              //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                      //memset
 S L mz(A x){R max(1,xn)*(xt==10?Z(C):Z(L));}                                //array size
@@ -240,8 +240,7 @@ S A apply(A*a,I na,A*l,A*g){
     Q 102:{A k=*f->A;J(k->n!=na)er();A v=ma(0,na);F(na)v->A[i]=mh(a[i]);A d=a2(mh(k),mh(v));d->t=99;
            A z=eval(f->A[1],&d,g);mf(d);R z;}
     Q 105:Y(f->A[0]->C[0]){
-      Q'/':{A z=0,h[]={f->A[1],0,0};
-            FA(x,{J(z){h[1]=z;h[2]=a;A r=apply(h,3,l,g);mf(z);z=r;}E{z=mh(a);}});R z;}
+      Q'/':{A z=0,h[]={f->A[1],0,0};FA(x,{J(z){h[1]=z;h[2]=a;A r=apply(h,3,l,g);mf(z);z=r;}E{z=mh(a);}});R z;}
       B;}
     Q 106:{J(na!=2)er();Y(*f->C){
       Q'-':Q'_':R pen1(*f->C,x);
@@ -274,7 +273,7 @@ S A apply(A*a,I na,A*l,A*g){
     B;}
   en();R 0;
 }
-S L truthy(A x){J(!xn||x==cv[':'][1])R 0;Y(abs(xt)){Q 6:Q 11:R!!*xL;Q 10:R!!*xC;U:en();R 0;}}
+S L truthy(A x){J(!xn)R 0;J(xt>99)R x!=cv[':'][1];Y(abs(xt)){Q 6:Q 11:R!!*xL;Q 10:R!!*xC;U:en();R 0;}}
 S A eval(A x,A*l,A*g){L n=xn,t=xt;
   J(t==-11){A z=dget(*l,*xL);J(!z)z=dget(*g,*xL);J(!z)e("value");R z;}
   J(t==11&&n==1){A z=ma(-11,1);*zL=*xL;R z;}
