@@ -1,5 +1,5 @@
 typedef void V;typedef char C;typedef int I;typedef long long L;typedef double D;
-typedef struct SA{L t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //r:refcount,t:type,n:length,L A C:pointers to data
+typedef struct SA{L c:8,t:8,r:56,n,L[0];struct SA*A[0];C C[0];}*A; //c:log(capacity),r:refcnt,t:type,n:count,L A C:data
 #define xn (x->n)
 #define yn (y->n)
 #define zn (z->n)
@@ -70,20 +70,30 @@ S L pv1(C*s,L x){write(2,s,len(s));write(2,"           ",max(1,10-len(s)));ph((L
 #define er() e("rank")
 #define ea(x) dbg({J(!(x)){e(XSTR(__LINE__)": "XSTR(x));}})
 
-//memory manager (simplest possible implementation -- memory never reclaimed)
-S V*mp0,*mp1,*mp; //mp0:start of heap, mp1:end of constants, mp:end of heap
-S V mi(){mp0=mp=(V*)mmap(0,1L<<45,3,0x4022,-1,0);J((L)mp<0)e("mm");}        //init
-S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                              //memcpy
-S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                      //memset
-S L mz(A x){R max(1,xn)*(xt==10?Z(C):Z(L));}                                //array size
-S A ma(C t,L n){A x=mp;x->r=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}               //allocate
-S V mf(A x){ea(x->r>0);J(--x->r)R;J(!xt||(xt>=99&&xt<=106))F(max(1,xn))     //free
-            mf(xA[i]);ms(xC,0xaa,mz(x));xt+=50;}
-S A mh(A x){x->r++;R x;}                                                    //hold (inc refcount)
-
-S V pm(){for(V*p=mp1;p<mp;p+=Z(struct SA)+mz((A)p)){
-  A y=p;J(y->r){ph((L)y);ps(" r");pd(y->r);ps("t");pd(yt);ps("n");pd(yn);ps(" ");ph(*yL);ps("\n");}
-}}
+//memory manager - buddy system
+#define mN 45 //heap size is 2^mN
+#define mF 123 //type of a free chunk
+S V*mp,*mq,*mb[mN+1]; //mp...mq:heap, mb[i]:doubly linked list of chunks of size 2^i (xA[0],xA[1] reused for prev,next)
+S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;} //memcpy
+S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;} //memset
+S V mi(){A x=mp=mb[mN]=(V*)mmap(0,1L<<mN,3,0x4022,-1,0); //init
+         mq=mp+(1L<<mN);x->c=mN;xt=mF;x->r=0;xA[0]=xA[1]=x;ea((L)mp>0);}
+S L mz0(C t,L n){t=abs(t);R max(1,n)*(t==10?Z(C):t==6?Z(L):Z(A));} //array size
+S L mz(A x){R mz0(xt,xn);}
+S A ma(C t,L n){L k=mz0(t,n),i=8;W((1L<<i)<k)i++;L j=i;W(!mb[j])j++; //allocate
+                A x=mb[j];J(x==*xA){mb[j]=0;}E{A y=xA[0],z=xA[1];yA[1]=z;mb[j]=zA[0]=y;}
+                W(j>i){j--;A y=(V*)x+(1L<<j);y->c=j;yt=mF;y->r=0;yA[0]=yA[1]=y;ea(!mb[j]);mb[j]=y;}
+                x->c=i;xt=t;x->r=1;xn=n;R x;}
+S V mf(A x){ea(x->r>0);J(--x->r)R;J(!xt||(99<=xt&&xt<=106))F(max(1,xn))mf(xA[i]);dbg(ms(xC,0xab,mz(x))); //free
+            J(mp<=(V*)x&&(V*)x<mq){
+              W(1){A y=mp+((V*)x-mp^1L<<x->c);J(yt!=mF||y->c!=x->c)B;
+                   J(y==*yA){mb[x->c]=0;}E{A u=yA[0],v=yA[1];u->A[1]=v;mb[x->c]=v->A[0]=u;}
+                   x=(A)((L)x&~(1L<<x->c));x->c++;}
+              A y=mb[x->c];J(y){A z=*yA;xA[0]=z;zA[1]=x;xA[1]=y;yA[0]=x;mb[x->c]=x;}E{mb[x->c]=xA[0]=xA[1]=x;}
+            }E{
+              ea(xt==10);L n=mz(x);V*p=(V*)((L)x-(L)x%PG);L r=munmap(p+PG,n);ea(!r);r=munmap(p,PG+n);ea(!r);
+            }}
+S A mh(A x){x->r++;R x;} //hold (inc refcount)
 
 //constants
 S A ca0,cl0,cc0,cy0,cd0,cc[256],cv[128][2],coxyz[3];
@@ -98,7 +108,6 @@ S V ci(){ //init
   F(2)FC("!#$%&*+,<=>?@^_|~:.-0123456789"){x=cv[c][i]=ma(107-i,1);*xC=c;} //verbs
   F(2)FC("'\\/"                          ){x=cv[c][i]=ma(108  ,1);*xC=c;} //adverbs
   F(3){x=coxyz[i]=ma(11,i+2);*xL='o';for(L j=0;j<=i;j++)xL[j+1]='x'+j;}
-  mp1=mp;
 }
 
 //basic array operations
@@ -291,7 +300,6 @@ S V exec(C*x,A*l,A*g){
   J(*x!='\\'){s=s0=x;A t=prs(';'),r=eval(t,l,g);mf(t);out(r);mf(r);R;}
   Y(x[1]){Q 0:exit(0);B;
           Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);B;
-          Q'm':pm();B;
           U:e("syscmd");B;}
 }
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp main");
