@@ -59,6 +59,7 @@ S V ph(L x){C s[17];s[16]=0;F(16){s[15-i]=hex(x&15);x>>=4;}write(2,s,17);}
 S V pd(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';write(2,u+1,b+31-u);}
 #define pv(x) pv1(#x,(L)(x))
 S L pv1(C*s,L x){write(2,s,len(s));write(2,"           ",max(1,10-len(s)));ph((L)x);write(2,"\n",1);R x;}
+#define dbg(x) {x;}
 
 //error handling
 #define e(m){write(1,"'"m"\n",2+Z(m));exit(1);}
@@ -67,6 +68,7 @@ S L pv1(C*s,L x){write(2,s,len(s));write(2,"           ",max(1,10-len(s)));ph((L
 #define et() e("type")
 #define ed() e("domain")
 #define er() e("rank")
+#define ea(x) dbg({J(!(x)){e(XSTR(__LINE__)": "XSTR(x));}})
 
 //memory manager (simplest possible implementation -- memory never reclaimed)
 S V*mp0,*mp1,*mp; //mp0:start of heap, mp1:end of constants, mp:end of heap
@@ -75,7 +77,7 @@ S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;}                              //me
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;}                                      //memset
 S L mz(A x){R max(1,xn)*(xt==10?Z(C):Z(L));}                                //array size
 S A ma(C t,L n){A x=mp;x->r=1;xt=t;xn=n;mp+=Z(*x)+mz(x);R x;}               //allocate
-S V mf(A x){J(--x->r)R;J(!xt||(xt>=99&&xt<=106))F(max(1,xn))                //free
+S V mf(A x){ea(x->r>0);J(--x->r)R;J(!xt||(xt>=99&&xt<=106))F(max(1,xn))     //free
             mf(xA[i]);ms(xC,0xaa,mz(x));xt+=50;}
 S A mh(A x){x->r++;R x;}                                                    //hold (inc refcount)
 
