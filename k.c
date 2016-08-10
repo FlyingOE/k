@@ -86,10 +86,10 @@ S A ma(C t,L n){L k=mz0(t,n),i=8;W((1L<<i)<k)i++;L j=i;W(!mb[j])j++; //allocate
                 x->c=i;xt=t;x->r=1;xn=n;R x;}
 S V mf(A x){ea(x->r>0);J(--x->r)R;J(!xt||(99<=xt&&xt<=106))F(max(1,xn))mf(xA[i]);dbg(ms(xC,0xab,mz(x))); //free
             J(mp<=(V*)x&&(V*)x<mq){
-              W(1){A y=mp+((V*)x-mp^1L<<x->c);J(yt!=mF||y->c!=x->c)B;
-                   J(y==*yA){mb[x->c]=0;}E{A u=yA[0],v=yA[1];u->A[1]=v;mb[x->c]=v->A[0]=u;}
-                   x=(A)((L)x&~(1L<<x->c));x->c++;}
-              A y=mb[x->c];J(y){A z=*yA;xA[0]=z;zA[1]=x;xA[1]=y;yA[0]=x;mb[x->c]=x;}E{mb[x->c]=xA[0]=xA[1]=x;}
+              L i=x->c;W(1){A y=mp+((V*)x-mp^1L<<i);J(yt!=mF||y->c!=i)B;
+                            J(y==*yA){mb[i]=0;}E{A u=yA[0],v=yA[1];u->A[1]=v;mb[i]=v->A[0]=u;}
+                            x=(A)((L)x&~(1L<<i));i++;}
+              A y=mb[i];mb[i]=x;x->c=i;J(y){A z=*yA;xA[0]=z;zA[1]=x;xA[1]=y;yA[0]=x;}E{xA[0]=xA[1]=x;}
             }E{
               ea(xt==10);L n=mz(x);V*p=(V*)((L)x-(L)x%PG);L r=munmap(p+PG,n);ea(!r);r=munmap(p,PG+n);ea(!r);
             }}
