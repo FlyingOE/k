@@ -7,6 +7,3 @@ b: #build
 	@clang $(O) -O3 -o k
 	@strip -R .comment -R '.note*' k
 	@stat -c 'size:%s' k
-d: #debug
-	@clang $(O) -g -o kd
-	@kdbg ./kd
