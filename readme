@@ -1,5 +1,2 @@
-x86_64 Linux only
-
-usage:
- make
- rlwrap -S' ' ./k
+x86_64 linux only
+usage: make && rlwrap -S' ' ./k
