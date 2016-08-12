@@ -94,6 +94,12 @@ S V mf(A x){ea(x->r>0);J(--x->r)R;J(!xt||(99<=xt&&xt<=106))F(max(1,xn))mf(xA[i])
               ea(xt==10);L n=mz(x);V*p=(V*)((L)x-(L)x%PG);L r=munmap(p+PG,n);ea(!r);r=munmap(p,PG+n);ea(!r);
             }}
 S A mh(A x){x->r++;R x;} //hold (inc refcount)
+S A mr(A x,L n){ //resize
+  L t=xt;
+  J(x->r>1){L m=min(n,xn);A z=ma(t,n);mc(zC,xC,mz0(t,m));J(!t){for(L i=m;i<xn;i++)mf(xA[i]);}x->r--;R z;}
+  E J((1L<<x->c)<Z(struct SA)+mz0(t,n)){L m=min(n,xn);A z=ma(t,n);J(!t){F(m)zA[i]=mh(xA[i]);}mf(x);R z;}
+  E{J(!t&&n<xn){for(L i=n+1;i<xn;i++){mf(xA[i]);dbg(xA[i]=0);}}xn=n;R x;}
+}
 
 //constants
 S A ca0,cl0,cc0,cy0,cd0,cc[256],cv[128][2],coxyz[3];
@@ -114,9 +120,9 @@ S V ci(){ //init
 S A a1(A x        ){A r=ma(0,1);*r->A=x;                    R r;} //singleton
 S A a2(A x,A y    ){A r=ma(0,2);*r->A=x;r->A[1]=y;          R r;} //pair
 S A a3(A x,A y,A z){A r=ma(0,3);*r->A=x;r->A[1]=y;r->A[2]=z;R r;} //triplet
-S A addC(A x,C y){A z=ma(xt,xn+1);mc(zC,xC,mz(x));zC[xn]=y;mf(x);R z;}
-S A addL(A x,L y){A z=ma(xt,xn+1);mc(zL,xL,mz(x));zL[xn]=y;mf(x);R z;}
-S A addA(A x,A y){A z=ma(xt,xn+1);mc(zA,xA,mz(x));zA[xn]=y;F(zn-1)mh(zA[i]);mf(x);R z;}
+S A addC(A x,C y){L n=xn;A z=mr(x,n+1);zC[n]=y;R z;}
+S A addL(A x,L y){L n=xn;A z=mr(x,n+1);zL[n]=y;R z;}
+S A addA(A x,A y){L n=xn;A z=mr(x,n+1);zA[n]=mh(y);R z;}
 S A sqz(A x){J(xt)R x;L t=xA[0]->t;J(t>=0)R x;F(xn)J(t!=xA[i]->t)R x;
              A z=ma(-t,xn);Y(t){Q-6:Q-11:F(xn)zL[i]=*xA[i]->L;mf(x);R z;
                                 Q-10:    F(xn)zC[i]=*xA[i]->C;mf(x);R z;
