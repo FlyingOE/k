@@ -71,7 +71,6 @@ S V pA(A x){ps("t");pd(xt);ps("n");pd(xn);ps("r");pd(x->r);ps("c");pd(x->c);}
 
 #define dbg(x) x
 #define ea(x) dbg(J(!(x)){e(XSTR(__LINE__)": "XSTR(x));})
-dbg(S C mt[256];)
 
 //memory manager - buddy system
 #define mN 45 //heap size is 2^mN
@@ -79,9 +78,8 @@ dbg(S C mt[256];)
 S V*mp,*mb[mN+1]; //mp:heap start, mb[i]:doubly linked list of chunks of size 2^i (xA[0],xA[1] reused for prev,next)
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;} //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;} //memset
-S V mi(){A x=mp=mb[mN]=(V*)mmap(0,1L<<mN,3,0x4022,-1,0);x->c=mN;xt=mF;x->r=0;xA[0]=xA[1]=x;ea((L)mp>0); //init
-         dbg(mt[0]=mt[6]=mt[10]=mt[11]=mt[99]=1;for(L i=102;i<=108;i++)mt[i]=1;)}
-S L mz0(C t,L n){ea(n>=0);t=abs(t);ea(mt[t]);ea(t>=0||n==1);R max(1,n)*(t==10?Z(C):t==6?Z(L):Z(A));} //array size
+S V mi(){A x=mp=mb[mN]=(V*)mmap(0,1L<<mN,3,0x4022,-1,0);x->c=mN;xt=mF;x->r=0;xA[0]=xA[1]=x;ea((L)mp>0);} //init
+S L mz0(C t,L n){ea(n>=0);t=abs(t);ea(t>=0||n==1);R max(1,n)*(t==10?Z(C):t==6?Z(L):Z(A));} //array size
 S L mz(A x){R mz0(xt,xn);}
 S A ma(C t,L n){
   L k=Z(struct SA)+mz0(t,n),i=6;W((1L<<i)<k)i++;
