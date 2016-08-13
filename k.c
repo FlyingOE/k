@@ -76,11 +76,10 @@ dbg(S C mt[256];)
 //memory manager - buddy system
 #define mN 45 //heap size is 2^mN
 #define mF 123 //type of a free chunk
-S V*mp,*mq,*mb[mN+1]; //mp...mq:heap, mb[i]:doubly linked list of chunks of size 2^i (xA[0],xA[1] reused for prev,next)
+S V*mp,*mb[mN+1]; //mp:heap start, mb[i]:doubly linked list of chunks of size 2^i (xA[0],xA[1] reused for prev,next)
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;} //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;} //memset
-S V mi(){A x=mp=mb[mN]=(V*)mmap(0,1L<<mN,3,0x4022,-1,0); //init
-         mq=mp+(1L<<mN);x->c=mN;xt=mF;x->r=0;xA[0]=xA[1]=x;ea((L)mp>0);
+S V mi(){A x=mp=mb[mN]=(V*)mmap(0,1L<<mN,3,0x4022,-1,0);x->c=mN;xt=mF;x->r=0;xA[0]=xA[1]=x;ea((L)mp>0); //init
          dbg(mt[0]=mt[6]=mt[10]=mt[11]=mt[99]=1;for(L i=102;i<=108;i++)mt[i]=1;)}
 S L mz0(C t,L n){ea(n>=0);t=abs(t);ea(mt[t]);ea(t>=0||n==1);R max(1,n)*(t==10?Z(C):t==6?Z(L):Z(A));} //array size
 S L mz(A x){R mz0(xt,xn);}
@@ -93,7 +92,7 @@ S A ma(C t,L n){
 }
 S V mf(A x){
   ea(x->r>0);J(--x->r)R;J(!xt||(99<=xt&&xt<=106))F(max(1,xn))mf(xA[i]);dbg(ms(xC,0xab,mz(x))); //free
-  J(mp<=(V*)x&&(V*)x<mq){
+  J(mp<=(V*)x&&(V*)x<mp+(1L<<mN)){
     L i=x->c;W(1){A y=mp+((V*)x-mp^1L<<i);J(yt!=mF||y->c!=i)B;
                   J(y==*yA){mb[i]=0;}E{A u=yA[0],v=yA[1];u->A[1]=v;mb[i]=v->A[0]=u;}
                   x=(A)((L)x&~(1L<<i));i++;}
