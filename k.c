@@ -270,7 +270,7 @@ S A eval(A,A*,A*);
 S A apply(A*a,I na,A*l,A*g){
   A f=*a,x=a[1],y=na>2?a[2]:0;
   Y(f->t){
-    Q 102:{A k=*f->A;J(k->n!=na)er();A v=ma(0,na);F(na)v->A[i]=mh(a[i]);A d=a2(mh(k),mh(v));d->t=99;
+    Q 102:{A k=*f->A;J(k->n!=na)er();A v=ma(0,na);F(na)v->A[i]=mh(a[i]);A d=a2(mh(k),v);d->t=99;
            A z=eval(f->A[1],&d,g);mf(d);R z;}
     Q 105:Y(f->A[0]->C[0]){
       Q'/':{A z=0,h[]={f->A[1],0,0};FA(x,{J(z){h[1]=z;h[2]=a;A r=apply(h,3,l,g);mf(z);z=r;}E{z=mh(a);}});R z;}
