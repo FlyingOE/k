@@ -81,17 +81,18 @@ S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;} //memset
 S V mi(){A x=mp=mb[mN]=(V*)mmap(0,1L<<mN,3,0x4022,-1,0);x->c=mN;xt=mF;x->r=0;xA[0]=xA[1]=x;ea((L)mp>0);} //init
 S L mz0(C t,L n){ea(n>=0);t=abs(t);ea(t>=0||n==1);R max(1,n)*(t==10?Z(C):t==6?Z(L):Z(A));} //array size
 S L mz(A x){R mz0(xt,xn);}
-S A ma(C t,L n){
-  L k=Z(struct SA)+mz0(t,n),i=6;W((1L<<i)<k)i++;
-  L j=i;W(!mb[j])j++; //allocate
+S A ma(C t,L n){ //allocate
+  L k=Z(struct SA)+mz0(t,n),i=5;W(1L<<i<k)i++;
+  L j=i;W(!mb[j])j++;
   A x=mb[j];J(x==*xA){mb[j]=0;}E{A y=xA[0],z=xA[1];yA[1]=z;mb[j]=zA[0]=y;}
   W(j>i){j--;A y=(V*)x+(1L<<j);y->c=j;yt=mF;y->r=0;yA[0]=yA[1]=y;ea(!mb[j]);mb[j]=y;}
   x->c=i;xt=t;x->r=1;xn=n;R x;
 }
-S V mf(A x){
-  ea(x->r>0);J(--x->r)R;J(!xt||(99<=xt&&xt<=106))F(max(1,xn))mf(xA[i]);dbg(ms(xC,0xab,mz(x))); //free
-  J(mp<=(V*)x&&(V*)x<mp+(1L<<mN)){
-    L i=x->c;W(1){A y=mp+((V*)x-mp^1L<<i);J(yt!=mF||y->c!=i)B;
+S V mf(A x){ //free
+  ea(x->r>0);J(--x->r)R;J(!xt||(99<=xt&&xt<=106))F(max(1,xn))mf(xA[i]);dbg(ms(xC,0xab,mz(x)));
+  L dx=(V*)x-mp;
+  J(0<=dx&&dx<1L<<mN){
+    L i=x->c;W(1){A y=mp+(dx^1L<<i);J(yt!=mF||y->c!=i)B;
                   J(y==*yA){mb[i]=0;}E{A u=yA[0],v=yA[1];u->A[1]=v;mb[i]=v->A[0]=u;}
                   x=(A)((L)x&~(1L<<i));i++;}
     A y=mb[i];mb[i]=x;x->c=i;J(y){A z=*yA;xA[0]=z;zA[1]=x;xA[1]=y;yA[0]=x;}E{xA[0]=xA[1]=x;}
