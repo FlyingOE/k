@@ -226,7 +226,7 @@ S V oA(A x){ //output array
     Q 11:F(xn){oC('`');L v=xL[i];W(v){oC(v&0xff);v>>=8;}}B;
     Q 99:J(xA[0]->n>1){oA(*xA);oC('!');oA(xA[1]);}E{oC('(');oA(*xA);oS(")!",2);oA(xA[1]);}B;
     Q 102:oS(xA[2]->C,xA[2]->n);B;
-    Q 103:oA(*xA);oC('[');oA(xA[1]);oC(']');B;
+    Q 103:{oA(*xA);for(L i=1,n=xn;i<n;i++){oC(i==1?'[':';');J(xA[i]!=cv[':'][1])oA(xA[i]);}oC(']');B;}
     Q 104:oA(*xA);oA(xA[1]);B;
     Q 105:oA(xA[1]);oA(*xA);B;
     Q 106:Q 107:Q 108:{C c=*xC;oC(c);J('0'<=c&&c<='9')oC(':');J(x==cv[c][1])oC(':');B;}
@@ -269,28 +269,42 @@ S A eval(A,A*,A*);
 S A apply(A*a,I na,A*l,A*g){
   A f=*a,x=a[1],y=na>2?a[2]:0;
   Y(f->t){
-    Q 102:{A k=*f->A;J(k->n!=na)er();A v=ma(0,na);F(na)v->A[i]=mh(a[i]);A d=a2(mh(k),v);d->t=99;
-           A z=eval(f->A[1],&d,g);mf(d);R z;}
-    Q 105:Y(f->A[0]->C[0]){
-      Q'/':{A z=0,h[]={f->A[1],0,0};FA(x,{J(z){h[1]=z;h[2]=a;A r=apply(h,3,l,g);mf(z);z=r;}E{z=mh(a);}});R z;}
-      B;}
-    Q 106:{J(na!=2)er();Y(*f->C){
-      Q'-':Q'_':R pen1(*f->C,x);
-      Q'#':{A z=ma(-6,1);*zL=xn;R z;}
-      Q'@':{A z=ma(-6,1);*zL=xt;R z;}
-      Q',':J(xt<0){A z=ma(-xt,1);mc(zC,xC,mz(z));R z;}E{R a1(mh(x));}
-      Q'*':Y(abs(xt)){Q 0:R mh(*xA);
-                      Q 6:Q 10:Q 11:{A z=ma(-abs(xt),1);xt==10?(*zC=*xC):(*zL=*xL);R z;}
-                      U:en();}
-      Q'!':{J(xt!=-6)en();
-            L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}}
-      Q'1':{C s[256];J(xt<0)er();J(xt!=10)et();J(xn>=Z(s))el();mc(s,xC,xn);s[xn]=0;
-            A z;L fd=open(s,0,0);J(fd<0)e("open");L h[18];L r=fstat(fd,h);J(r)e("fstat");L n=h[6];
-            J(!n){z=mh(cc0);}E{V*z0=(V*)mmap(0,PG+n,3,0x4022,-1,0);J((L)z0<0)e("mmap");z=z0+(PG-Z(*z));
-                               V*u=(V*)mmap(zC,n,3,0x4012,fd,0);J((L)u<0)e("mmapfile");
-                               zn=n;zt=10;z->r=1;}
-            r=close(fd);J(r)e("close");R z;}
-      B;}
+    Q 102:{
+      A k=*f->A;J(k->n!=na)er();A v=ma(0,na);F(na)v->A[i]=mh(a[i]);A d=a2(mh(k),v);d->t=99;
+      A z=eval(f->A[1],&d,g);mf(d);R z;
+    }
+    Q 103:{
+      A z=ma(0,f->n+na);L j=1,ok=1;
+      F(f->n){zA[i]=mh(f->A[i]==cv[':'][1]&&j<na?a[j++]:f->A[i]);ok=ok&&(zA[i]!=cv[':'][1]);}
+      J(ok){L k=f->n;W(j<na){zA[k]=mh(a[j]);k++;j++;}zn=k;A r=apply(zA,k,l,g);mf(z);R r;}E{zn=f->n;zt=103;R z;}
+    }
+    Q 105:{
+      Y(f->A[0]->C[0]){
+        Q'/':{A z=0,h[]={f->A[1],0,0};FA(x,{J(z){h[1]=z;h[2]=a;A r=apply(h,3,l,g);mf(z);z=r;}E{z=mh(a);}});R z;}
+      }
+      B;
+    }
+    Q 106:{
+      J(na!=2)er();
+      Y(*f->C){
+        Q'-':Q'_':R pen1(*f->C,x);
+        Q'#':{A z=ma(-6,1);*zL=xn;R z;}
+        Q'@':{A z=ma(-6,1);*zL=xt;R z;}
+        Q',':J(xt<0){A z=ma(-xt,1);mc(zC,xC,mz(z));R z;}E{R a1(mh(x));}
+        Q'*':Y(abs(xt)){Q 0:R mh(*xA);
+                        Q 6:Q 10:Q 11:{A z=ma(-abs(xt),1);xt==10?(*zC=*xC):(*zL=*xL);R z;}
+                        U:en();}
+        Q'!':{J(xt!=-6)en();
+              L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}
+        Q'1':{C s[256];J(xt<0)er();J(xt!=10)et();J(xn>=Z(s))el();mc(s,xC,xn);s[xn]=0;
+              A z;L fd=open(s,0,0);J(fd<0)e("open");L h[18];L r=fstat(fd,h);J(r)e("fstat");L n=h[6];
+              J(!n){z=mh(cc0);}E{V*z0=(V*)mmap(0,PG+n,3,0x4022,-1,0);J((L)z0<0)e("mmap");z=z0+(PG-Z(*z));
+                                 V*u=(V*)mmap(zC,n,3,0x4012,fd,0);J((L)u<0)e("mmapfile");
+                                 zn=n;zt=10;z->r=1;}
+              r=close(fd);J(r)e("close");R z;}
+      }
+      B;
+    }
     Q 107:{J(na!=3)er();Y(*f->C){
       Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
       Q'!':Y(xt){
@@ -302,7 +316,8 @@ S A apply(A*a,I na,A*l,A*g){
         U:et();}
       B;}}
     Q 108:{A z=a2(mh(f),mh(x));zt=105;R z;}
-    B;}
+    B;
+  }
   en();R 0;
 }
 S L truthy(A x){J(!xn)R 0;J(xt>99)R x!=cv[':'][1];Y(abs(xt)){Q 6:Q 11:R!!*xL;Q 10:R!!*xC;U:en();R 0;}}
