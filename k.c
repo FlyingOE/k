@@ -168,14 +168,13 @@ S C une(C x){Y(x){Q'0':R'\0';Q'n':R'\n';Q'r':R'\r';Q't':R'\t';U:R x;}}
 S A mon(A x){J(xt!=107)R x;C c=*xC;mf(x);R mh(cv[c][1]);} //monadic version of verb, eg + -> +:
 S V ep(L x){J(!x)R;C*p=s,*q=s;W(p>s0&&p[-1]!='\n')p--;W(*q&&*q!='\n')q++;write(1,p,q-p);C b[256];*b='\n'; //parse error
             L k=min(s-p,Z(b));F(k)b[i+1]='_';b[k+1]='^';b[k+2]='\n';write(1,b,k+3);e("parse");}
-S L arity(A x){L r=1;Y(xt){Q-11:{C c=*xC;J(c=='y'||c=='z')r=max(r,c-'w');B;}
-                           Q 0:{F(xn)r=max(r,arity(xA[i]));}}                R r;}
-S A prs(C l){ //parse
+S A prs(C l,L*nargs){ //parse
   A z=a1(mh(cc[l]));W(1){ //z:result of parsing expression in () [] {} or at top level
     A y=0,t[64];L n=0,g=0;W(1){ //t:sequence of nouns/verbs, n:count, g:bitset of grammatical categories (0=noun,1=verb)
       A x=0;L gx=0;ep(0x80&*s);W(*s==' '){s++;J(*s=='/')W(*s&&*s!='\n')s++;}C c=*s;
       J(!c)B; //eof?
-      E J(ltr(c)){x=ma(-11,1);L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}*xL=v;}
+      E J(ltr(c)){x=ma(-11,1);L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}*xL=v;
+                  J(v=='y'||v=='z')*nargs=max(v-'w',*nargs);}
       E J(c=='`'){x=mh(cy0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}}
       E J(c=='"'){x=mh(cc0);s++;W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
                   ep(!*s);s++;J(xn==1)xt=-xt;}
@@ -187,13 +186,13 @@ S A prs(C l){ //parse
                   J(xn==1)xt=-xt;}
       E J(c<127&&cv[c][0]){I u=s[1]==':';x=mh(cv[c][u]);s+=1+u;gx=1;}
       E J(c=='('&&s[1]==')'){s+=2;x=mh(ca0);}
-      E J(c=='('){s++;x=prs(s[-1]);ep(*s!=')');s++;J(xn==2){A y=x;x=mh(xA[1]);mf(y);}}
-      E J(c=='{'){C*s1=s;s++;A u=prs(';');ep(*s!='}');s++;
-                  x=ma(102,3);xA[0]=mh(coxyz[arity(u)-1]);xA[1]=u;xA[2]=ma(10,s-s1);mc(xA[2]->C,s1,s-s1);}
+      E J(c=='('){s++;x=prs(s[-1],nargs);ep(*s!=')');s++;J(xn==2){A y=x;x=mh(xA[1]);mf(y);}}
+      E J(c=='{'){C*s1=s;s++;L k=1;A u=prs(';',&k);ep(*s!='}');s++;
+                  x=ma(102,3);xA[0]=mh(coxyz[k-1]);xA[1]=u;xA[2]=ma(10,s-s1);mc(xA[2]->C,s1,s-s1);}
       E J(c!=')'&&c!=']'&&c!='}'&&c!=';'&&c!='\n'&&c){ep(1);}
       J(!x)B;
       C m=1;W(m)Y(*s){Q'\\':Q'/':Q'\'':{C c=*s++,u=*s==':';s+=u;x=a2(mh(cv[c][u]),x);gx=1;B;}
-                      Q'[':{s++;A u=x;x=prs('[');*xA=u;ep(*s!=']');s++;gx=0;B;}
+                      Q'[':{s++;A u=x;x=prs('[',nargs);*xA=u;ep(*s!=']');s++;gx=0;B;}
                       U:m=0;B;}
       t[n++]=x;g=g<<1|gx;
     }
@@ -332,10 +331,10 @@ S A eval(A x,A*l,A*g){L n=xn,t=xt;
                           R n&1?mh(cv[':'][1]):eval(xA[n-1],l,g);}
   A v[5];J(n>Z(v))er();F(n)v[i]=eval(xA[i],l,g);A z=apply(v,n,l,g);F(n)mf(v[i]);R z;
 }
-S V exec(C*x,A*l,A*g){
-  J(*x!='\\'){s=s0=x;A t=prs(';'),r=eval(t,l,g);mf(t);out(r);mf(r);R;}
+S V exec(C*x,A*l,A*g){L k=1;
+  J(*x!='\\'){s=s0=x;A t=prs(';',&k),r=eval(t,l,g);mf(t);out(r);mf(r);R;}
   Y(x[1]){Q 0:exit(0);B;
-          Q'a':s=s0=x+2;A t=prs(';');out(t);mf(t);B;
+          Q'a':s=s0=x+2;A t=prs(';',&k);out(t);mf(t);B;
           Q'm':pm();B;
           U:e("syscmd");B;}
 }
