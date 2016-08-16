@@ -148,8 +148,8 @@ S A dget(A d,L k){
   R 0;
 }
 S A dput(A d,L k,A v){
-  ea(d->t==99);A x=mh(d->A[0]),y=mh(d->A[1]);L i=0,n=xn;ea(yn==n);W(i<n&&xL[i]!=k)i++;
-  A z=i<n?a2(x,amend(y,i,v)):a2(addL(x,k),addA(y,v));zt=99;mf(d);R z; //todo: mf(d) earlier
+  ea(d->t==99);A x=mh(d->A[0]),y=mh(d->A[1]);mf(d);L i=0,n=xn;ea(yn==n);W(i<n&&xL[i]!=k)i++;
+  A z=i<n?a2(x,amend(y,i,v)):a2(addL(x,k),addA(y,v));zt=99;R z;
 }
 S A ext(A x,L n){
   J(xt>=0)R x;A z=ma(abs(xt),n);L k=mz(x),l=mz(z);
