@@ -79,7 +79,7 @@ S V*mp,*mb[mN+1]; //mp:heap start, mb[i]:doubly linked list of chunks of size 2^
 S V mc(V*x,V*y,L z){C*p=x,*q=y;F(z)*p++=*q++;} //memcpy
 S V ms(V*x,C y,L z){C*p=x;F(z)*p++=y;} //memset
 S V mi(){A x=mp=mb[mN]=(V*)mmap(0,1L<<mN,3,0x4022,-1,0);x->c=mN;xt=mF;x->r=0;xA[0]=xA[1]=x;ea((L)mp>0);} //init
-S L mz0(C t,L n){ea(n>=0);t=abs(t);ea(t>=0||n==1);R max(1,n)*(t==10?Z(C):t==6?Z(L):Z(A));} //array size
+S L mz0(C t,L n){ea(n>=0);t=abs(t);ea(t>=0||n==1);R t==10?n*Z(C):t==6||t==11?n*Z(L):max(1,n)*Z(A);} //array size
 S L mz(A x){R mz0(xt,xn);}
 S A ma(C t,L n){ //allocate
   L k=Z(struct SA)+mz0(t,n),i=5;W(1L<<i<k)i++;
@@ -112,13 +112,16 @@ S V pm0(A x,L c){J(x->c<c){F(2)pm0((V*)x+i*(1L<<(c-1)),c-1);R;}J(xt!=mF){pA(x);p
 S V pm(){pm0(mp,mN);}
 
 //constants
-S A ca0,cl0,cc0,cy0,cd0,cc[256],cv[128][2],coxyz[3];
+S A cl0,cc0,cy0,cae,cle,cce,cye,cde,cc[256],cv[128][2],coxyz[3];
 S V ci(){ //init
-  A x=cl0=ma( 6,0);*xL=0;       //!0
-    x=cc0=ma(10,0);*xC=' ';     //""
-    x=cy0=ma(11,0);*xL=0;       //0#`
-    x=ca0=ma( 0,0);*xA=mh(cc0); //()
-    x=cd0=ma(99,2);*xA=mh(cy0);xA[1]=mh(ca0); //(0#`)!()
+  A x=cl0=ma( -6,1);*xL=0;                     //0
+    x=cc0=ma(-10,1);*xC=' ';                   //' '
+    x=cy0=ma(-11,1);*xL=0;                     //`
+    x=cle=ma(  6,0);                           //!0
+    x=cce=ma( 10,0);                           //""
+    x=cye=ma( 11,0);                           //0#`
+    x=cae=ma(  0,0);*xA=mh(cce);               //()
+    x=cde=ma( 99,2);*xA=mh(cye);xA[1]=mh(cae); //(0#`)!()
   F(256){x=cc[i]=ma(-10,1);*xC=i;} //chars
   F(2)FC("!#$%&*+,<=>?@^_|~:.-0123456789"){x=cv[c][i]=ma(107-i,1);*xC=c;} //verbs
   F(2)FC("'\\/"                          ){x=cv[c][i]=ma(108  ,1);*xC=c;} //adverbs
@@ -155,6 +158,11 @@ S A ext(A x,L n){
   J(xt>=0)R x;A z=ma(abs(xt),n);L k=mz(x),l=mz(z);
   mc(zC,xC,k);W(2*k<l){mc(zC+k,zC,k);k*=2;}mc(zC+k,zC,l-k);R z;
 }
+S A nil(A x){Y(xt){
+  Q 6:Q 11:{A z=ma(xt,xn);F(xn)xL[i]=0  ;R z;}
+  Q 10:    {A z=ma(xt,xn);F(xn)xC[i]=' ';R z;}
+  Q 0:R mh(*xA);Q-6:R mh(cl0);Q-10:R mh(cc0);Q-11:R mh(cy0);U:en();R 0;
+}}
 
 //parser
 S C*s0,*s; //k source
@@ -175,17 +183,17 @@ S A prs(C l,L*nargs){ //parse
       J(!c)B; //eof?
       E J(ltr(c)){x=ma(-11,1);L v=*s++,h=8;W(ldg(*s)){v|=(L)*s++<<h;h+=8;}*xL=v;
                   J(v=='y'||v=='z')*nargs=max(v-'w',*nargs);}
-      E J(c=='`'){x=mh(cy0);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}}
-      E J(c=='"'){x=mh(cc0);s++;W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
+      E J(c=='`'){x=mh(cye);W(*s=='`'){s++;L v=0,h=0;J(ltr(*s))W(ldg(*s)){v|=(L)*s++<<h;h+=8;}x=addL(x,v);}}
+      E J(c=='"'){x=mh(cce);s++;W(*s&&*s!='"')J(*s=='\\'){s++;ep(!*s);x=addC(x,une(*s++));}E{x=addC(x,*s++);}
                   ep(!*s);s++;J(xn==1)xt=-xt;}
-      E J(c=='0'&&s[1]=='x'){x=mh(cc0);s+=2;W(hdg(*s)&&hdg(s[1])){x=addC(x,unh(*s)<<4|unh(s[1]));s+=2;}J(xn==1)xt=-xt;}
+      E J(c=='0'&&s[1]=='x'){x=mh(cce);s+=2;W(hdg(*s)&&hdg(s[1])){x=addC(x,unh(*s)<<4|unh(s[1]));s+=2;}J(xn==1)xt=-xt;}
       E J(dgt(c)&&s[1]==':'){I u=s[2]==':';s+=2+u;x=mh(cv[c][u]);gx=1;}
       E J(num(s)&&(*s!='-'||s==s0||(!ldg(s[-1])&&s[-1]!=')'))){
-                  x=mh(cl0);W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');
+                  x=mh(cle);W(1){I m=*s=='-';s+=m;L v=0;W(dgt(*s))v=10*v+(*s++-'0');
                                  x=addL(x,m?-v:v);J(*s!=' '||!num(s+1))B;s++;}
                   J(xn==1)xt=-xt;}
       E J(c<127&&cv[c][0]){I u=s[1]==':';x=mh(cv[c][u]);s+=1+u;gx=1;}
-      E J(c=='('&&s[1]==')'){s+=2;x=mh(ca0);}
+      E J(c=='('&&s[1]==')'){s+=2;x=mh(cae);}
       E J(c=='('){s++;x=prs(s[-1],nargs);ep(*s!=')');s++;J(xn==2){A y=x;x=mh(xA[1]);mf(y);}}
       E J(c=='{'){C*s1=s;s++;L k=1;A u=prs(';',&k);ep(*s!='}');s++;
                   x=ma(102,3);xA[0]=mh(coxyz[k-1]);xA[1]=u;xA[2]=ma(10,s-s1);mc(xA[2]->C,s1,s-s1);}
@@ -202,7 +210,7 @@ S A prs(C l,L*nargs){ //parse
                J(y){y=a2(mon(x),mh(y));yt=104;}E{y=x;}}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
-  J(l!='('&&zn==1){mf(z);z=mh(ca0);}
+  J(l!='('&&zn==1){mf(z);z=mh(cae);}
   E J(l==';'){A y=zA[zn-1];J(!yt&&*yA==cv[':'][0]){z=addA(z,mh(cv[':'][1]));}J(zn==2){A u=z;z=mh(zA[1]);mf(u);}}
   R z;
 }
@@ -291,13 +299,13 @@ S A apply(A*a,I na,A*l,A*g){
         Q'@':{A z=ma(-6,1);*zL=xt;R z;}
         Q',':J(xt<0){A z=ma(-xt,1);mc(zC,xC,mz(z));R z;}E{R a1(mh(x));}
         Q'*':Y(abs(xt)){Q 0:R mh(*xA);
-                        Q 6:Q 10:Q 11:{A z=ma(-abs(xt),1);xt==10?(*zC=*xC):(*zL=*xL);R z;}
+                        Q 6:Q 10:Q 11:{A z=ma(-abs(xt),1);xt==10?(*zC=xn?*xC:' '):(*zL=xn?*xL:0);R z;}
                         U:en();}
         Q'!':{J(xt!=-6)en();
               L n=*xL;A z=ma(6,abs(n));J(n<0){F(-n)zL[i]=i+n;}E{F(n)zL[i]=i;}R z;}
         Q'1':{C s[256];J(xt<0)er();J(xt!=10)et();J(xn>=Z(s))el();mc(s,xC,xn);s[xn]=0;
               A z;L fd=open(s,0,0);J(fd<0)e("open");L h[18];L r=fstat(fd,h);J(r)e("fstat");L n=h[6];
-              J(!n){z=mh(cc0);}E{V*z0=(V*)mmap(0,PG+n,3,0x4022,-1,0);J((L)z0<0)e("mmap");z=z0+(PG-Z(*z));
+              J(!n){z=mh(cce);}E{V*z0=(V*)mmap(0,PG+n,3,0x4022,-1,0);J((L)z0<0)e("mmap");z=z0+(PG-Z(*z));
                                  V*u=(V*)mmap(zC,n,3,0x4012,fd,0);J((L)u<0)e("mmapfile");
                                  zn=n;zt=10;z->r=1;}
               r=close(fd);J(r)e("close");R z;}
@@ -318,8 +326,9 @@ S A apply(A*a,I na,A*l,A*g){
           U:et();
         }
         Q'#':Y(xt){
-          Q-6:{L n=*xL;J(n<0)el();A z=ma(abs(yt),n);L k=mz(z),l=min(mz(y),k);mc(zC,yC,l);W(2*l<k){mc(zC+l,zC,l);l*=2;}
-               J(l<k)mc(zC+l,zC,k-l);J(!yt){F(max(n,1))mh(zA[i]);};R sqz(z);}
+          Q-6:{L n=*xL;J(n<0)el();A z=ma(abs(yt),n);
+               J(n){L k=mz(z),l=min(mz(y),k);mc(zC,yC,l);W(2*l<k){mc(zC+l,zC,l);l<<=1;}J(l<k)mc(zC+l,zC,k-l);}
+               J(!yt){J(n){F(max(n,1))mh(zA[i]);z=sqz(z);}E{*zA=nil(*yA);}}R z;}
           U:ed();
         }
       }
@@ -351,7 +360,7 @@ S V exec(C*x,A*l,A*g){L k=1;
 }
 asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp main");
 V main(I ac,C**av){
-  mi();ci();A l=mh(cd0);
+  mi();ci();A l=mh(cde);
   J(av[1]){I f=open(av[1],0,0);J(f<0)e("open");L h[18];L r=fstat(f,h);J(r)e("fstat");L n=h[6];J(!n)e("empty");
            C*s=(C*)mmap(0,n,3,0x4002,f,0);J(s==(V*)-1)e("mmap");r=close(f);J(r)e("close");J(s[n-1]!='\n')e("eof");
            s[n-1]=0;exec(s,&l,&l);r=munmap(s,n);J(r)e("munmap");}
