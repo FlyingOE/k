@@ -304,16 +304,27 @@ S A apply(A*a,I na,A*l,A*g){
       }
       B;
     }
-    Q 107:{J(na!=3)er();Y(*f->C){
-      Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
-      Q'!':Y(xt){
-        Q 11:Q-11:{J(xt>=0&&yt>=0&&xn!=yn)el();
-                   mh(x);mh(y);J(xt<0){x=ext(x,1);y=a1(y);}E{y=ext(y,xn);} A z=a2(x,y);zt=99;R z;}
-        Q-6:Y(*xL){
-          Q-16:{A z=ma(-6,1);*zL=y->r;R z;}
-          U:ed();}
-        U:et();}
-      B;}}
+    Q 107:{
+      J(na!=3)er();
+      Y(*f->C){
+        Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
+        Q'!':Y(xt){
+          Q 11:Q-11:{J(xt>=0&&yt>=0&&xn!=yn)el();
+                     mh(x);mh(y);J(xt<0){x=ext(x,1);y=a1(y);}E{y=ext(y,xn);} A z=a2(x,y);zt=99;R z;}
+          Q-6:Y(*xL){
+            Q-16:{A z=ma(-6,1);*zL=y->r;R z;}
+            U:ed();
+          }
+          U:et();
+        }
+        Q'#':Y(xt){
+          Q-6:{L n=*xL;J(n<0)el();A z=ma(abs(yt),n);L k=mz(z),l=min(mz(y),k);mc(zC,yC,l);W(2*l<k){mc(zC+l,zC,l);l*=2;}
+               J(l<k)mc(zC+l,zC,k-l);J(!yt){F(max(n,1))mh(zA[i]);};R sqz(z);}
+          U:ed();
+        }
+      }
+      B;
+    }
     Q 108:{A z=a2(mh(f),mh(x));zt=105;R z;}
     B;
   }
