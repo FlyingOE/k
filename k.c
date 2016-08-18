@@ -154,11 +154,9 @@ S A dput(A d,L k,A v){
 S A ext(A x,L n){ //extend atom to list
   J(xt>=0)R x;A z=ma(abs(xt),n);L k=mz(x),l=mz(z);mc(zC,xC,k);W(2*k<l){mc(zC+k,zC,k);k*=2;}mc(zC+k,zC,l-k);R z;
 }
-S A nil(A x){Y(xt){
-  Q 6:Q 11:{A z=ma(xt,xn);F(zn)zL[i]=0  ;R z;}
-  Q 10:    {A z=ma(xt,xn);F(zn)zC[i]=' ';R z;}
-  Q 0:R mh(*xA);Q-6:R mh(cl0);Q-10:R mh(cc0);Q-11:R mh(cy0);U:en();R 0;
-}}
+S A nil(A x){L t=xt;Y(t){Q 6:Q 10:Q 11:{A z=ma(t,xn);ms(zC,t==10?' ':0,mz(z));R z;}
+                         Q 0:J(xn){A z=ma(0,xn);F(xn)zA[i]=nil(xA[i]);R z;}E{R x;}
+                         Q-6:R mh(cl0);Q-10:R mh(cc0);Q-11:R mh(cy0);U:en();R 0;}}
 
 //parser
 S C*s0,*s; //k source
