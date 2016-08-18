@@ -155,8 +155,8 @@ S A ext(A x,L n){ //extend atom to list
   J(xt>=0)R x;A z=ma(abs(xt),n);L k=mz(x),l=mz(z);mc(zC,xC,k);W(2*k<l){mc(zC+k,zC,k);k*=2;}mc(zC+k,zC,l-k);R z;
 }
 S A nil(A x){Y(xt){
-  Q 6:Q 11:{A z=ma(xt,xn);F(xn)xL[i]=0  ;R z;}
-  Q 10:    {A z=ma(xt,xn);F(xn)xC[i]=' ';R z;}
+  Q 6:Q 11:{A z=ma(xt,xn);F(zn)zL[i]=0  ;R z;}
+  Q 10:    {A z=ma(xt,xn);F(zn)zC[i]=' ';R z;}
   Q 0:R mh(*xA);Q-6:R mh(cl0);Q-10:R mh(cc0);Q-11:R mh(cy0);U:en();R 0;
 }}
 
@@ -321,9 +321,9 @@ S A apply(A*a,I na,A*l,A*g){
           U:et();
         }
         Q'#':Y(xt){
-          Q-6:{L n=*xL;J(n<0)el();A z=ma(abs(yt),n);
-               J(n){L k=mz(z),l=min(mz(y),k);mc(zC,yC,l);W(2*l<k){mc(zC+l,zC,l);l<<=1;}J(l<k)mc(zC+l,zC,k-l);}
-               J(!yt){J(n){F(max(n,1))mh(zA[i]);z=sqz(z);}E{*zA=nil(*yA);}}R z;}
+          Q-6:{L n=*xL,t=abs(yt);J(n<0)el();A z=ma(t,n);J(!yn)y=t==6?cl0:t==10?cc0:t==11?cy0:y;
+               J(n){L k=mz(z),l=min(mz(y),k);mc(zC,yC,l);W(2*l<k){mc(zC+l,zC,l);l*=2;}J(l<k)mc(zC+l,zC,k-l);}
+               J(!t){J(n){F(n)mh(zA[i]);z=sqz(z);}E{*zA=nil(*yA);}} R z;}
           U:ed();
         }
       }
