@@ -109,11 +109,12 @@ S V pm0(A x,L c){J(x->c<c){F(2)pm0((V*)x+i*(1L<<(c-1)),c-1);R;}J(xt!=mF){pA(x);p
 S V pm(){pm0(mp,mN);}
 
 //constants
-S A cl0,cc0,cy0,cae,cle,cce,cye,cde,cc[256],cv[128][2],coxyz[3];
+#define _0N (1L<<63)
+S A clN,ccN,cyN,cae,cle,cce,cye,cde,cc[256],cv[128][2],coxyz[3];
 S V ci(){ //init
-  A x=cl0=ma( -6,1);*xL=0;                     //0
-    x=cc0=ma(-10,1);*xC=' ';                   //' '
-    x=cy0=ma(-11,1);*xL=0;                     //`
+  A x=clN=ma( -6,1);*xL=_0N;                   //0
+    x=ccN=ma(-10,1);*xC=' ';                   //' '
+    x=cyN=ma(-11,1);*xL=0;                     //`
     x=cle=ma(  6,0);                           //!0
     x=cce=ma( 10,0);                           //""
     x=cye=ma( 11,0);                           //0#`
@@ -156,7 +157,7 @@ S A ext(A x,L n){ //extend atom to list
 }
 S A nil(A x){L t=xt;Y(t){Q 6:Q 10:Q 11:{A z=ma(t,xn);ms(zC,t==10?' ':0,mz(z));R z;}
                          Q 0:J(xn){A z=ma(0,xn);F(xn)zA[i]=nil(xA[i]);R z;}E{R x;}
-                         Q-6:R mh(cl0);Q-10:R mh(cc0);Q-11:R mh(cy0);U:en();R 0;}}
+                         Q-6:R mh(clN);Q-10:R mh(ccN);Q-11:R mh(cyN);U:en();R 0;}}
 
 //parser
 S C*s0,*s; //k source
@@ -214,7 +215,8 @@ S C ob[0x400];S L on=0;                    //buffer
 S V ofl(){J(on){write(1,ob,on);on=0;}}     //flush
 S V oC(C x){J(on==Z(ob))ofl();ob[on++]=x;} //output char
 S V oS(C*x,L n){J(n>Z(ob)-on){ofl();write(1,x,n);}E{mc(ob+on,x,n);on+=n;}} //output string
-S V oL(L x){C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';oS(u+1,b+31-u);} //output number
+S V oL(L x){J(x==_0N){oS("0N",2);R;} //output number
+            C b[32],*u=b+31;I m=x<0;J(m)x=-x;do{*u--='0'+x%10;x/=10;}W(x);J(m)*u--='-';oS(u+1,b+31-u);}
 S V oA(A x){ //output array
   J(xn==1&&0<=xt&&xt<100)oC(',');
   Y(abs(xt)){
@@ -322,7 +324,7 @@ S A apply(A*a,I na,A*l,A*g){
           U:et();
         }
         Q'#':Y(xt){
-          Q-6:{L n=*xL,t=abs(yt);J(n<0)el();A z=ma(t,n);J(!yn)y=t==6?cl0:t==10?cc0:t==11?cy0:y;
+          Q-6:{L n=*xL,t=abs(yt);J(n<0)el();A z=ma(t,n);J(!yn)y=t==6?clN:t==10?ccN:t==11?cyN:y;
                J(n){L k=mz(z),l=min(mz(y),k);mc(zC,yC,l);W(2*l<k){mc(zC+l,zC,l);l*=2;}J(l<k)mc(zC+l,zC,k-l);}
                J(!t){J(n){F(n)mh(zA[i]);z=sqz(z);}E{*zA=nil(*yA);}} R z;}
           U:ed();
