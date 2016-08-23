@@ -309,6 +309,9 @@ S A apply(A*a,I na,A*l,A*g){
                                  V*u=(V*)mmap(zC,n,3,0x4012,fd,0);J((L)u<0)e("mmapfile");
                                  zn=n;zt=10;z->r=1;}
               r=close(fd);J(r)e("close");R z;}
+        Q'|':J(xn<2){R mh(x);}E{A z=ma(xt,xn);L j=xn;Y(xt){Q 10:    F(xn){zC[i]=xC[--j];}B;
+                                                           Q 6:Q 11:F(xn){zL[i]=xL[--j];}B;
+                                                           Q 0:     F(xn){zA[i]=xA[--j];}B;}R z;}
       }
       B;
     }
