@@ -258,10 +258,12 @@ S A pen2(C f,A x,A y){
   L n=max(xn,yn);J(xt>=0&&yt>=0&&xn!=yn)el();
   J(!xt||!yt){
     A z=ma(0,n);
-    J  (xt<0)FA(y,{zA[i]=pen2(f,x    ,a);})
-    E J(xt>0)FA(y,{zA[i]=pen2(f,xA[i],a);})
-    E J(yt<0)FA(x,{zA[i]=pen2(f,a,y    );})
-    E        FA(x,{zA[i]=pen2(f,a,yA[i]);})
+    J  (xt==-6){FA(y,{zA[i]=pen2(f,x    ,a);})}
+    E J(xt== 6){FA(y,{A u=ma(-6,1);*u->L=xL[i];zA[i]=pen2(f,u,a);mf(u);})}
+    E J(yt==-6){FA(x,{zA[i]=pen2(f,a,y    );})}
+    E J(yt== 6){FA(x,{A u=ma(-6,1);*u->L=yL[i];zA[i]=pen2(f,a,u);mf(u);})}
+    E J(!xt&&!yt){FA(x,{zA[i]=pen2(f,a,yA[i]);})}
+    E{en();R 0;}
     R sqz(z);
   }E J(abs(xt)==6&&abs(yt)==6){
     A z=ma(max(xt,yt),n);J(xt>0&&yt>0&&xn!=yn)el();L*p=xL,*q=yL,*r=zL,*r1=r+n,dp=xt>0,dq=yt>0;
