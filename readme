@@ -1,2 +1,3 @@
 x86_64 linux only
 usage: make && rlwrap -S' ' ./k
+licence: will decide later, proprietary for the time being
