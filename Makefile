@@ -7,3 +7,5 @@ b: #build
 	@clang $(O) -O3 -o k
 	@strip -R .comment -R '.note*' k
 	@stat -c 'size:%s' k
+a: #asm
+	@clang $(O) -O3 -o k.s -masm=intel -S
