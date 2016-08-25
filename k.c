@@ -201,7 +201,7 @@ S A prs(C l,L*nargs){ //parse
     }
     J(!n){y=mh(cv[':'][1]);}
     E J(!(g&1)){y=t[--n];g>>=1;W(n){J(n>1&&(g&3)==1){y=a3(t[n-1],t[n-2],y);n-=2;g>>=2;}E{y=a2(mon(t[--n]),y);g>>=1;}}}
-    E{W(n){A x;J(n>1&&(g&3)==1){x=a2(t[n-1],t[n-2]);xt=103;n-=2;g>>=2;}E{x=t[--n];}
+    E{W(n){A x;J(n>1&&(g&3)==1){x=a2(t[n-1],t[n-2]);n-=2;g>>=2;}E{x=t[--n];}
                J(y){y=a2(mon(x),mh(y));yt=104;}E{y=x;}}}
     z=addA(z,y);J(*s!=';'&&*s!='\n')B;s++;
   }
@@ -317,6 +317,7 @@ S A apply(A*a,I na,A*l,A*g){
       B;
     }
     Q 107:{
+      J(na==2){A z=a2(mh(f),mh(x));zt=103;R z;}
       J(na!=3)er();
       Y(*f->C){
         Q'+':Q'-':Q'*':Q'%':Q'&':Q'|':Q'<':Q'=':Q'>':R pen2(*f->C,x,y);
