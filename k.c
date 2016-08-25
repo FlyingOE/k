@@ -362,7 +362,7 @@ S V exec(C*x,A*l,A*g){L k=1;
           Q'm':pm();B;
           U:e("syscmd");B;}
 }
-asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi\njmp main");
+asm(".globl _start\n_start:pop %rdi\nmov %rsp,%rsi");
 V main(I ac,C**av){
   mi();ci();A l=mh(cde);
   J(av[1]){I f=open(av[1],0,0);J(f<0)e("open");L h[18];L r=fstat(f,h);J(r)e("fstat");L n=h[6];J(!n)e("empty");
